@@ -1,0 +1,49 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-night: #12141c;
+  --color-surface: #1b1e2b;
+  --color-inset: #0d0f15;
+  --color-edge: #2c3042;
+  --color-ink: #e8eaf2;
+  --color-dim: #9aa0b5;
+  --color-gold: #f5b942;
+  --color-gold-deep: #1a1505;
+  --color-danger: #e26d6d;
+  --color-mint: #6dcb84;
+
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply bg-night font-sans text-[15px] leading-normal text-ink antialiased;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply cursor-pointer rounded-[10px] border border-edge bg-surface px-3.5 py-2 text-ink hover:border-dim;
+  }
+
+  .btn-primary {
+    @apply border-gold bg-gold font-semibold text-gold-deep hover:border-gold disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .btn-danger {
+    @apply text-danger;
+  }
+
+  .input {
+    @apply rounded-[10px] border border-edge bg-inset px-2.5 py-2 text-ink focus:border-gold focus:outline-none;
+  }
+
+  .card {
+    @apply rounded-[10px] border border-edge bg-surface p-4;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border border-edge bg-inset px-2.5 py-[3px] text-[13px];
+  }
+}
