@@ -53,12 +53,15 @@ function formatCountdown(until: number, now: number): string {
 }
 
 // Re-render every second so live countdowns tick down while the popup is open.
-function useNow(intervalMs = 1000): number {
+// Only runs the interval while `enabled`, so an idle popup does no per-second work.
+function useNow(enabled: boolean, intervalMs = 1000): number {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
+    if (!enabled) return;
+    setNow(Date.now());
     const tick = window.setInterval(() => setNow(Date.now()), intervalMs);
     return () => window.clearInterval(tick);
-  }, [intervalMs]);
+  }, [enabled, intervalMs]);
   return now;
 }
 
@@ -66,7 +69,12 @@ export function PopupApp() {
   const state = useAppState();
   const [listId, setListId] = useState<string | null>(null);
   const [duration, setDuration] = useState(30);
-  const nowMs = useNow();
+  // Tick only while something is actually counting down.
+  const hasCountdown =
+    !!state &&
+    (state.adHocSessions.some((s) => s.endsAt > Date.now()) ||
+      state.passes.some((p) => p.expiresAt > Date.now()));
+  const nowMs = useNow(hasCountdown);
   if (!state) return null;
 
   const now = new Date(nowMs);

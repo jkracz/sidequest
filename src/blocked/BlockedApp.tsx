@@ -107,7 +107,6 @@ export function BlockedApp() {
   useEffect(() => {
     if (hostname && decision?.blocked) void registerResist(hostname);
     // Deliberately keyed to blocked-ness, not state: one registration per page load.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hostname, decision?.blocked]);
 
   if (!state) return null;
