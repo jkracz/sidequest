@@ -1,0 +1,11 @@
+packages:
+  - .
+
+onlyBuiltDependencies:
+  - esbuild
+
+overrides:
+  acorn: 8.16.0
+  baseline-browser-mapping: 2.10.35
+  caniuse-lite: 1.0.30001797
+  enhanced-resolve: 5.23.0
