@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import type { PushupSideQuest, QuestResult } from '../../shared/types';
 
 interface Props {
@@ -25,31 +27,33 @@ export function PushupQuest({ quest, onComplete }: Props) {
   }, [done, target]);
 
   return (
-    <div className="card flex flex-col items-center gap-5 p-6">
-      <p className="text-dim">
-        Drop and give yourself {target}. Count a rep with a tap or the space bar — honor system.
-      </p>
-      <div
-        role="button"
-        aria-label="Count one push-up"
-        className={`flex h-40 w-40 items-center justify-center rounded-full border-4 text-5xl font-bold tabular-nums select-none ${
-          done
-            ? 'border-mint text-mint'
-            : 'cursor-pointer border-gold text-ink active:scale-95'
-        }`}
-        onClick={() => {
-          if (!done) setCount((c) => Math.min(target, c + 1));
-        }}
-      >
-        {done ? '💪' : `${count}/${target}`}
-      </div>
-      <button
-        className="btn btn-primary"
-        disabled={!done}
-        onClick={() => onComplete({ questType: 'pushups', reps: target })}
-      >
-        {done ? `Earn ${quest.passDurationMinutes} minutes` : `${target - count} reps to go`}
-      </button>
-    </div>
+    <Card>
+      <CardContent className="flex flex-col items-center gap-5 py-2">
+        <p className="text-muted-foreground">
+          Drop and give yourself {target}. Count a rep with a tap or the space bar — honor system.
+        </p>
+        <div
+          role="button"
+          aria-label="Count one push-up"
+          className={`flex h-40 w-40 items-center justify-center rounded-full border-4 text-5xl font-bold tabular-nums select-none ${
+            done
+              ? 'border-mint text-mint'
+              : 'cursor-pointer border-primary text-foreground active:scale-95'
+          }`}
+          onClick={() => {
+            if (!done) setCount((c) => Math.min(target, c + 1));
+          }}
+        >
+          {done ? '💪' : `${count}/${target}`}
+        </div>
+        <Button
+          size="lg"
+          disabled={!done}
+          onClick={() => onComplete({ questType: 'pushups', reps: target })}
+        >
+          {done ? `Earn ${quest.passDurationMinutes} minutes` : `${target - count} reps to go`}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

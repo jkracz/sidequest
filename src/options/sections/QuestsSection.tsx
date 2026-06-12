@@ -1,3 +1,8 @@
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { setState } from '../../shared/storage';
 import type {
   AppState,
@@ -15,27 +20,36 @@ export function QuestsSection({ state }: { state: AppState }) {
   return (
     <section className="flex flex-col items-start gap-4">
       {state.quests.map((quest) => (
-        <div key={quest.id} className="card flex w-full flex-col gap-3.5">
-          <h3 className="font-semibold">
-            {quest.name} <span className="text-[13px] font-normal text-dim">({quest.type})</span>
-          </h3>
-          {quest.type === 'reflection' && (
-            <ReflectionQuestFields quest={quest} onChange={updateQuest} />
-          )}
-          {quest.type === 'timer' && <TimerQuestFields quest={quest} onChange={updateQuest} />}
-          {quest.type === 'pushups' && <PushupQuestFields quest={quest} onChange={updateQuest} />}
-          <label className="flex items-center gap-2">
-            Completing it earns
-            <NumberInput
-              value={quest.passDurationMinutes}
-              max={120}
-              onChange={(v) => void updateQuest({ ...quest, passDurationMinutes: v })}
-            />
-            minutes on the blocked site
-          </label>
-        </div>
+        <Card key={quest.id} className="w-full">
+          <CardHeader>
+            <CardTitle>
+              {quest.name}{' '}
+              <span className="text-[13px] font-normal text-muted-foreground">
+                ({quest.type})
+              </span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3.5">
+            {quest.type === 'reflection' && (
+              <ReflectionQuestFields quest={quest} onChange={updateQuest} />
+            )}
+            {quest.type === 'timer' && <TimerQuestFields quest={quest} onChange={updateQuest} />}
+            {quest.type === 'pushups' && (
+              <PushupQuestFields quest={quest} onChange={updateQuest} />
+            )}
+            <Label className="font-normal">
+              Completing it earns
+              <NumberInput
+                value={quest.passDurationMinutes}
+                max={120}
+                onChange={(v) => void updateQuest({ ...quest, passDurationMinutes: v })}
+              />
+              minutes on the blocked site
+            </Label>
+          </CardContent>
+        </Card>
       ))}
-      <p className="text-dim">More quest types coming soon.</p>
+      <p className="text-muted-foreground">More quest types coming soon.</p>
     </section>
   );
 }
@@ -58,31 +72,34 @@ function ReflectionQuestFields({
       <div className="flex flex-col gap-1.5">
         <span>
           Prompts{' '}
-          <span className="text-[13px] text-dim">(served in rotation, one per visit)</span>
+          <span className="text-[13px] text-muted-foreground">
+            (served in rotation, one per visit)
+          </span>
         </span>
         {prompts.map((prompt, i) => (
           <div key={i} className="flex items-start gap-2">
-            <textarea
+            <Textarea
               rows={1}
-              className="input flex-1 resize-y"
+              className="min-h-8 flex-1 resize-y"
               value={prompt}
               onChange={(e) => setPrompts(prompts.map((p, j) => (j === i ? e.target.value : p)))}
             />
-            <button
-              className="btn btn-danger"
+            <Button
+              variant="destructive"
+              size="icon"
               title={prompts.length === 1 ? 'Keep at least one prompt' : 'Remove prompt'}
               disabled={prompts.length === 1}
               onClick={() => setPrompts(prompts.filter((_, j) => j !== i))}
             >
               ✕
-            </button>
+            </Button>
           </div>
         ))}
-        <button className="btn self-start" onClick={() => setPrompts([...prompts, ''])}>
+        <Button variant="outline" className="self-start" onClick={() => setPrompts([...prompts, ''])}>
           + Add prompt
-        </button>
+        </Button>
       </div>
-      <label className="flex items-center gap-2">
+      <Label className="font-normal">
         Minimum length
         <NumberInput
           value={quest.config.minChars}
@@ -90,7 +107,7 @@ function ReflectionQuestFields({
           onChange={(v) => void onChange({ ...quest, config: { ...quest.config, minChars: v } })}
         />
         characters
-      </label>
+      </Label>
     </>
   );
 }
@@ -103,7 +120,7 @@ function TimerQuestFields({
   onChange: (quest: SideQuest) => Promise<void>;
 }) {
   return (
-    <label className="flex items-center gap-2">
+    <Label className="font-normal">
       Countdown lasts
       <NumberInput
         value={quest.config.seconds}
@@ -111,7 +128,7 @@ function TimerQuestFields({
         onChange={(v) => void onChange({ ...quest, config: { seconds: v } })}
       />
       seconds before you can continue
-    </label>
+    </Label>
   );
 }
 
@@ -123,7 +140,7 @@ function PushupQuestFields({
   onChange: (quest: SideQuest) => Promise<void>;
 }) {
   return (
-    <label className="flex items-center gap-2">
+    <Label className="font-normal">
       Count off
       <NumberInput
         value={quest.config.reps}
@@ -131,7 +148,7 @@ function PushupQuestFields({
         onChange={(v) => void onChange({ ...quest, config: { reps: v } })}
       />
       push-ups before you can continue
-    </label>
+    </Label>
   );
 }
 
@@ -145,9 +162,9 @@ function NumberInput({
   onChange: (value: number) => void;
 }) {
   return (
-    <input
+    <Input
       type="number"
-      className="input w-[84px]"
+      className="w-21"
       min={1}
       max={max}
       value={value}

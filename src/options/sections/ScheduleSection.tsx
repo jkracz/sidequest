@@ -1,3 +1,10 @@
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { DAY_LABELS, isTimeBlockActive } from '../../shared/schedule';
 import { setState } from '../../shared/storage';
 import type { AppState, DayOfWeek, TimeBlock } from '../../shared/types';
@@ -31,7 +38,7 @@ export function ScheduleSection({ state }: { state: AppState }) {
   return (
     <section className="flex flex-col items-start gap-4">
       {state.timeBlocks.length === 0 && (
-        <p className="text-dim">
+        <p className="text-muted-foreground">
           No time blocks yet. A time block is when a block list is enforced — outside of one,
           everything is open.
         </p>
@@ -45,9 +52,9 @@ export function ScheduleSection({ state }: { state: AppState }) {
           onDelete={() => void deleteBlock(tb.id)}
         />
       ))}
-      <button className="btn" onClick={() => void createBlock()}>
+      <Button variant="outline" onClick={() => void createBlock()}>
         + New time block
-      </button>
+      </Button>
     </section>
   );
 }
@@ -65,10 +72,8 @@ function TimeBlockCard({
 }) {
   const active = isTimeBlockActive(block, new Date());
 
-  function toggleDay(day: DayOfWeek) {
-    const days = block.days.includes(day)
-      ? block.days.filter((d) => d !== day)
-      : [...block.days, day].sort();
+  function setDays(values: string[]) {
+    const days = values.map(Number).sort() as DayOfWeek[];
     void onChange({ ...block, days });
   }
 
@@ -82,96 +87,102 @@ function TimeBlockCard({
   const overnight = block.endTime <= block.startTime;
 
   return (
-    <div className="card flex w-full flex-col gap-3.5">
-      <div className="flex items-center justify-between gap-2">
-        <input
-          className="input flex-1 border-transparent bg-transparent text-base font-semibold hover:bg-inset"
-          value={block.label}
-          onChange={(e) => void onChange({ ...block, label: e.target.value })}
-        />
-        {active && (
-          <span className="rounded-full bg-mint px-2.5 py-[3px] text-xs font-semibold whitespace-nowrap text-[#08240f]">
-            Active now
-          </span>
-        )}
-        <button className="btn btn-danger" onClick={onDelete}>
-          Delete
-        </button>
-      </div>
-
-      <div className="flex items-center gap-1.5">
-        {DAY_LABELS.map((label, i) => (
-          <button
-            key={label}
-            className={`cursor-pointer rounded-[10px] border px-2.5 py-1 text-[13px] ${
-              block.days.includes(i as DayOfWeek)
-                ? 'border-gold bg-gold font-semibold text-gold-deep'
-                : 'border-edge bg-surface text-dim hover:border-dim'
-            }`}
-            onClick={() => toggleDay(i as DayOfWeek)}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex items-center gap-2">
-        <label className="flex items-center gap-2">
-          From
-          <input
-            type="time"
-            className="input"
-            value={block.startTime}
-            onChange={(e) => void onChange({ ...block, startTime: e.target.value })}
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>
+          <Input
+            className="border-transparent text-base font-semibold dark:bg-transparent dark:hover:bg-input/30"
+            value={block.label}
+            onChange={(e) => void onChange({ ...block, label: e.target.value })}
           />
-        </label>
-        <label className="flex items-center gap-2">
-          to
-          <input
-            type="time"
-            className="input"
-            value={block.endTime}
-            onChange={(e) => void onChange({ ...block, endTime: e.target.value })}
-          />
-        </label>
-        {overnight && <span className="text-dim">spans midnight</span>}
-      </div>
+        </CardTitle>
+        <CardAction className="flex items-center gap-2">
+          {active && <Badge className="bg-mint text-mint-deep">Active now</Badge>}
+          <Button variant="destructive" onClick={onDelete}>
+            Delete
+          </Button>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3.5">
+        <ToggleGroup
+          type="multiple"
+          variant="outline"
+          size="sm"
+          spacing={1.5}
+          value={block.days.map(String)}
+          onValueChange={setDays}
+        >
+          {DAY_LABELS.map((label, i) => (
+            <ToggleGroupItem
+              key={label}
+              value={String(i)}
+              className="data-[state=on]:border-primary data-[state=on]:bg-primary data-[state=on]:font-semibold data-[state=on]:text-primary-foreground"
+            >
+              {label}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[13px] text-dim">Enforces:</span>
-        {state.blockLists.length === 0 && (
-          <span className="text-dim">no block lists exist yet</span>
-        )}
-        {state.blockLists.map((bl) => (
-          <label key={bl.id} className="chip cursor-pointer select-none">
-            <input
-              type="checkbox"
-              className="accent-gold"
-              checked={block.blockListIds.includes(bl.id)}
-              onChange={() => toggleId('blockListIds', bl.id)}
+        <div className="flex items-center gap-2">
+          <Label className="font-normal">
+            From
+            <Input
+              type="time"
+              className="w-fit"
+              value={block.startTime}
+              onChange={(e) => void onChange({ ...block, startTime: e.target.value })}
             />
-            {bl.name} ({bl.sites.length})
-          </label>
-        ))}
-      </div>
+          </Label>
+          <Label className="font-normal">
+            to
+            <Input
+              type="time"
+              className="w-fit"
+              value={block.endTime}
+              onChange={(e) => void onChange({ ...block, endTime: e.target.value })}
+            />
+          </Label>
+          {overnight && <span className="text-muted-foreground">spans midnight</span>}
+        </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-[13px] text-dim">Quests offered:</span>
-        {state.quests.map((q) => (
-          <label key={q.id} className="chip cursor-pointer select-none">
-            <input
-              type="checkbox"
-              className="accent-gold"
-              checked={block.questIds.includes(q.id)}
-              onChange={() => toggleId('questIds', q.id)}
-            />
-            {q.name}
-          </label>
-        ))}
-        {block.questIds.length === 0 && (
-          <span className="text-dim">(none selected — any quest)</span>
-        )}
-      </div>
-    </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[13px] text-muted-foreground">Enforces:</span>
+          {state.blockLists.length === 0 && (
+            <span className="text-muted-foreground">no block lists exist yet</span>
+          )}
+          {state.blockLists.map((bl) => (
+            <Label
+              key={bl.id}
+              className="rounded-full border bg-input/30 px-2.5 py-1 text-[13px] font-normal"
+            >
+              <Checkbox
+                checked={block.blockListIds.includes(bl.id)}
+                onCheckedChange={() => toggleId('blockListIds', bl.id)}
+              />
+              {bl.name} ({bl.sites.length})
+            </Label>
+          ))}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[13px] text-muted-foreground">Quests offered:</span>
+          {state.quests.map((q) => (
+            <Label
+              key={q.id}
+              className="rounded-full border bg-input/30 px-2.5 py-1 text-[13px] font-normal"
+            >
+              <Checkbox
+                checked={block.questIds.includes(q.id)}
+                onCheckedChange={() => toggleId('questIds', q.id)}
+              />
+              {q.name}
+            </Label>
+          ))}
+          {block.questIds.length === 0 && (
+            <span className="text-muted-foreground">(none selected — any quest)</span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

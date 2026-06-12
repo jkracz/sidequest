@@ -9,32 +9,15 @@ export interface Metrics {
   streakDays: number;
 }
 
-/**
- * An intercept counts as resisted if no quest was completed for that hostname
- * within this window afterwards — i.e. you hit the wall and walked away.
- */
-const FOLLOW_THROUGH_MS = 5 * 60_000;
-
 export function computeMetrics(state: AppState, now = Date.now()): Metrics {
-  const { history, intercepts, settings } = state;
+  const { history, resists, settings } = state;
 
-  const resistedVisits = intercepts.filter((i) => {
-    if (now - i.at < FOLLOW_THROUGH_MS) return false; // verdict still pending
-    return !history.some(
-      (h) =>
-        h.hostname === i.hostname && h.createdAt >= i.at && h.createdAt - i.at <= FOLLOW_THROUGH_MS
-    );
-  }).length;
-
-  const activityTimestamps = [
-    ...history.map((h) => h.createdAt),
-    ...intercepts.map((i) => i.at),
-  ];
+  const activityTimestamps = [...history.map((h) => h.createdAt), ...resists.map((r) => r.at)];
 
   return {
     questsCompleted: history.length,
-    resistedVisits,
-    minutesSaved: resistedVisits * settings.minutesPerResistedVisit,
+    resistedVisits: resists.length,
+    minutesSaved: resists.length * settings.minutesPerResistedVisit,
     streakDays: computeStreak(activityTimestamps, now),
   };
 }

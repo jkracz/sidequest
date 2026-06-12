@@ -1,4 +1,7 @@
 import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { formatSeconds } from '../../shared/schedule';
 import type { QuestResult, TimerSideQuest } from '../../shared/types';
 
@@ -26,24 +29,23 @@ export function TimerQuest({ quest, onComplete }: Props) {
   const done = remaining === 0;
 
   return (
-    <div className="card flex flex-col items-center gap-5 p-6">
-      <p className="text-dim">Sit with the urge for a moment. The page isn't going anywhere.</p>
-      <div className="text-6xl font-bold tabular-nums" aria-live="polite">
-        {formatSeconds(remaining)}
-      </div>
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-inset">
-        <div
-          className="h-full rounded-full bg-gold transition-[width] duration-300"
-          style={{ width: `${((total - remaining) / total) * 100}%` }}
-        />
-      </div>
-      <button
-        className="btn btn-primary"
-        disabled={!done}
-        onClick={() => onComplete({ questType: 'timer', seconds: total })}
-      >
-        {done ? `Earn ${quest.passDurationMinutes} minutes` : 'Counting down…'}
-      </button>
-    </div>
+    <Card>
+      <CardContent className="flex flex-col items-center gap-5 py-2">
+        <p className="text-muted-foreground">
+          Sit with the urge for a moment. The page isn't going anywhere.
+        </p>
+        <div className="text-6xl font-bold tabular-nums" aria-live="polite">
+          {formatSeconds(remaining)}
+        </div>
+        <Progress className="h-1.5" value={((total - remaining) / total) * 100} />
+        <Button
+          size="lg"
+          disabled={!done}
+          onClick={() => onComplete({ questType: 'timer', seconds: total })}
+        >
+          {done ? `Earn ${quest.passDurationMinutes} minutes` : 'Counting down…'}
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

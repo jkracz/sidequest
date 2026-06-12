@@ -1,4 +1,8 @@
 import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { normalizeSite } from '../../shared/match';
 import { setState } from '../../shared/storage';
 import type { AppState, BlockList } from '../../shared/types';
@@ -28,7 +32,7 @@ export function BlockListsSection({ state }: { state: AppState }) {
   return (
     <section className="flex flex-col items-start gap-4">
       {state.blockLists.length === 0 && (
-        <p className="text-dim">
+        <p className="text-muted-foreground">
           No block lists yet. Create one and add the sites that eat your day.
         </p>
       )}
@@ -40,9 +44,9 @@ export function BlockListsSection({ state }: { state: AppState }) {
           onDelete={() => void deleteList(list.id)}
         />
       ))}
-      <button className="btn" onClick={() => void createList()}>
+      <Button variant="outline" onClick={() => void createList()}>
         + New block list
-      </button>
+      </Button>
     </section>
   );
 }
@@ -73,50 +77,60 @@ function BlockListCard({
   }
 
   return (
-    <div className="card flex w-full flex-col gap-3.5">
-      <div className="flex items-center justify-between gap-2">
-        <input
-          className="input flex-1 border-transparent bg-transparent text-base font-semibold hover:bg-inset"
-          value={list.name}
-          onChange={(e) => void onChange({ ...list, name: e.target.value })}
-        />
-        <button className="btn btn-danger" onClick={onDelete}>
-          Delete
-        </button>
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        {list.sites.map((site) => (
-          <span key={site} className="chip">
-            {site}
-            <button
-              title="Remove"
-              className="cursor-pointer text-[13px] leading-none text-dim hover:text-danger"
-              onClick={() => void onChange({ ...list, sites: list.sites.filter((s) => s !== site) })}
-            >
-              ✕
-            </button>
-          </span>
-        ))}
-        {list.sites.length === 0 && <span className="text-dim">No sites yet.</span>}
-      </div>
-      <form
-        className="flex items-center gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          addSite();
-        }}
-      >
-        <input
-          className="input"
-          placeholder="Add a site (e.g. youtube.com)"
-          value={siteInput}
-          onChange={(e) => setSiteInput(e.target.value)}
-        />
-        <button type="submit" className="btn">
-          Add
-        </button>
-      </form>
-      {error && <p className="text-[13px] text-danger">{error}</p>}
-    </div>
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle>
+          <Input
+            className="border-transparent text-base font-semibold dark:bg-transparent dark:hover:bg-input/30"
+            value={list.name}
+            onChange={(e) => void onChange({ ...list, name: e.target.value })}
+          />
+        </CardTitle>
+        <CardAction>
+          <Button variant="destructive" onClick={onDelete}>
+            Delete
+          </Button>
+        </CardAction>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3.5">
+        <div className="flex flex-wrap items-center gap-2">
+          {list.sites.map((site) => (
+            <Badge key={site} variant="secondary">
+              {site}
+              <button
+                title="Remove"
+                className="text-muted-foreground hover:text-destructive"
+                onClick={() =>
+                  void onChange({ ...list, sites: list.sites.filter((s) => s !== site) })
+                }
+              >
+                ✕
+              </button>
+            </Badge>
+          ))}
+          {list.sites.length === 0 && (
+            <span className="text-muted-foreground">No sites yet.</span>
+          )}
+        </div>
+        <form
+          className="flex items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            addSite();
+          }}
+        >
+          <Input
+            className="max-w-xs"
+            placeholder="Add a site (e.g. youtube.com)"
+            value={siteInput}
+            onChange={(e) => setSiteInput(e.target.value)}
+          />
+          <Button type="submit" variant="outline">
+            Add
+          </Button>
+        </form>
+        {error && <p className="text-[13px] text-destructive">{error}</p>}
+      </CardContent>
+    </Card>
   );
 }

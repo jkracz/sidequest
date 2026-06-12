@@ -50,13 +50,12 @@ export function decideBlock(state: AppState, url: string, now: Date): BlockDecis
 }
 
 /**
- * Pick the quest to offer for a block decision: the first eligible quest the
- * matching time blocks named, otherwise any configured quest.
+ * The quests the user may choose from for a block decision: the ones the
+ * matching time blocks named, or every configured quest if none were.
  */
-export function pickQuest(state: AppState, questIds: string[]): SideQuest | null {
-  for (const id of questIds) {
-    const quest = state.quests.find((q) => q.id === id);
-    if (quest) return quest;
-  }
-  return state.quests[0] ?? null;
+export function eligibleQuests(state: AppState, questIds: string[]): SideQuest[] {
+  const named = questIds
+    .map((id) => state.quests.find((q) => q.id === id))
+    .filter((q): q is SideQuest => q !== undefined);
+  return named.length > 0 ? named : state.quests;
 }

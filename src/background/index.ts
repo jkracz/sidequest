@@ -1,13 +1,9 @@
 import { decideBlock } from '../shared/blocking';
-import { hostnameOf } from '../shared/match';
 import { nextBlockStart } from '../shared/schedule';
 import { getState, persistMigrationIfNeeded, setState } from '../shared/storage';
 import type { AppState } from '../shared/types';
 
 const WAKE_ALARM = 'sidequest-wake';
-
-/** Repeat hits on the same hostname within this window log a single intercept. */
-const INTERCEPT_DEDUPE_MS = 30_000;
 
 void persistMigrationIfNeeded();
 
@@ -15,30 +11,9 @@ function blockedPageUrl(target: string): string {
   return chrome.runtime.getURL(`src/blocked/index.html?target=${encodeURIComponent(target)}`);
 }
 
-// Intercepts are appended read-modify-write; a sweep can block many tabs at
-// once, so the writes are chained to keep them from clobbering each other.
-let interceptWrites: Promise<unknown> = Promise.resolve();
-
-function logIntercept(hostname: string): void {
-  interceptWrites = interceptWrites
-    .then(async () => {
-      const state = await getState();
-      const now = Date.now();
-      const recent = state.intercepts.some(
-        (i) => i.hostname === hostname && now - i.at < INTERCEPT_DEDUPE_MS
-      );
-      if (!recent) {
-        await setState({ intercepts: [...state.intercepts, { hostname, at: now }] });
-      }
-    })
-    .catch(() => {});
-}
-
 async function redirectIfBlocked(tabId: number, url: string, state?: AppState): Promise<void> {
   const s = state ?? (await getState());
   if (decideBlock(s, url, new Date()).blocked) {
-    const hostname = hostnameOf(url);
-    if (hostname) logIntercept(hostname);
     try {
       await chrome.tabs.update(tabId, { url: blockedPageUrl(url) });
     } catch {

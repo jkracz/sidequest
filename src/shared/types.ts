@@ -77,15 +77,21 @@ export interface AdHocSession {
   endsAt: number;
 }
 
-/** One arrival at the block page. Raw material for the dashboard metrics. */
-export interface Intercept {
+/**
+ * A visit where the user hit the block page and left without earning a pass.
+ * Registered when a quest is shown and withdrawn on completion.
+ */
+export interface ResistedVisit {
   hostname: string;
   at: number;
 }
 
+export type ThemePreference = 'system' | 'light' | 'dark';
+
 export interface Settings {
   /** Minutes assumed saved per resisted visit in dashboard estimates. */
   minutesPerResistedVisit: number;
+  theme: ThemePreference;
 }
 
 /** A temporary allowance earned by completing a quest. */
@@ -115,6 +121,6 @@ export interface AppState {
   passes: Pass[];
   history: HistoryEntry[];
   adHocSessions: AdHocSession[];
-  intercepts: Intercept[];
+  resists: ResistedVisit[];
   settings: Settings;
 }

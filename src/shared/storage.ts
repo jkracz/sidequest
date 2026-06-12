@@ -42,9 +42,10 @@ export const DEFAULT_STATE: AppState = {
   passes: [],
   history: [],
   adHocSessions: [],
-  intercepts: [],
+  resists: [],
   settings: {
     minutesPerResistedVisit: 15,
+    theme: 'system',
   },
 };
 
@@ -116,17 +117,22 @@ function migrate(stored: Record<string, unknown>): AppState {
     passes: (stored.passes as AppState['passes']) ?? [],
     history,
     adHocSessions: (stored.adHocSessions as AppState['adHocSessions']) ?? [],
-    intercepts: (stored.intercepts as AppState['intercepts']) ?? [],
+    resists: (stored.resists as AppState['resists']) ?? [],
     settings: {
       minutesPerResistedVisit:
         (stored.settings as AppState['settings'] | undefined)?.minutesPerResistedVisit ??
         DEFAULT_STATE.settings.minutesPerResistedVisit,
+      theme:
+        (stored.settings as AppState['settings'] | undefined)?.theme ??
+        DEFAULT_STATE.settings.theme,
     },
   };
 }
 
 function hasLegacyShape(stored: Record<string, unknown>): boolean {
-  if ('reflections' in stored) return true;
+  // `intercepts` was arrival data from a build that measured resistance
+  // differently; it isn't convertible, so it's dropped rather than migrated.
+  if ('reflections' in stored || 'intercepts' in stored) return true;
   const settings = stored.settings as Record<string, unknown> | undefined;
   if (settings && 'passDurationMinutes' in settings) return true;
   const quests = stored.quests as SideQuest[] | undefined;
@@ -149,12 +155,17 @@ export async function persistMigrationIfNeeded(): Promise<void> {
   const stored = await chrome.storage.local.get(null);
   if (hasLegacyShape(stored)) {
     await chrome.storage.local.set(migrate(stored));
-    await chrome.storage.local.remove(['reflections']);
+    await chrome.storage.local.remove(['reflections', 'intercepts']);
   }
 }
 
 export async function setState(partial: Partial<AppState>): Promise<void> {
   await chrome.storage.local.set(partial);
+}
+
+/** Wipe everything; the next read falls back to DEFAULT_STATE. */
+export async function resetAllState(): Promise<void> {
+  await chrome.storage.local.clear();
 }
 
 export function onStateChanged(callback: () => void): () => void {

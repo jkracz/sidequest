@@ -1,13 +1,10 @@
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { computeMetrics, formatMinutes } from '../../shared/metrics';
+import { QUEST_ICONS } from '../../shared/quests';
 import { formatSeconds } from '../../shared/schedule';
 import { setState } from '../../shared/storage';
 import type { AppState, HistoryEntry } from '../../shared/types';
-
-const QUEST_ICONS: Record<HistoryEntry['questType'], string> = {
-  reflection: '📝',
-  timer: '⏳',
-  pushups: '💪',
-};
 
 function dayLabel(t: number, now: Date): string {
   const d = new Date(t);
@@ -31,12 +28,6 @@ export function QuestLogSection({ state }: { state: AppState }) {
     else groups.push({ label, entries: [entry] });
   }
 
-  async function clearAll() {
-    if (confirm('Reset your quest log and stats? This cannot be undone.')) {
-      await setState({ history: [], intercepts: [] });
-    }
-  }
-
   return (
     <section className="flex flex-col items-start gap-4">
       <div className="grid w-full grid-cols-2 gap-3 sm:grid-cols-4">
@@ -48,11 +39,11 @@ export function QuestLogSection({ state }: { state: AppState }) {
           label={metrics.streakDays === 1 ? 'day streak' : 'day streak'}
         />
       </div>
-      <p className="text-[13px] text-dim">
+      <p className="text-[13px] text-muted-foreground">
         Time saved assumes
-        <input
+        <Input
           type="number"
-          className="input mx-1.5 w-[64px] px-1.5 py-0.5"
+          className="mx-1.5 inline-flex h-7 w-16 px-1.5"
           min={1}
           max={120}
           value={state.settings.minutesPerResistedVisit}
@@ -68,62 +59,62 @@ export function QuestLogSection({ state }: { state: AppState }) {
       </p>
 
       {entries.length === 0 && (
-        <p className="text-dim">
+        <p className="text-muted-foreground">
           The log is empty. Every side quest you complete gets recorded here.
         </p>
       )}
 
       {groups.map((group) => (
         <div key={group.label} className="flex w-full flex-col gap-2.5">
-          <h3 className="mt-2 text-[13px] font-semibold tracking-wider text-dim uppercase">
+          <h3 className="mt-2 text-[13px] font-semibold tracking-wider text-muted-foreground uppercase">
             {group.label}
           </h3>
           {group.entries.map((entry) => (
-            <div key={entry.id} className="card flex w-full flex-col gap-2">
-              <div className="flex items-baseline justify-between gap-2">
-                <span>
-                  {QUEST_ICONS[entry.questType]} <strong>{entry.hostname}</strong>{' '}
-                  <span className="text-[13px] text-dim">· {entry.questName}</span>
-                </span>
-                <span className="text-dim">
-                  {new Date(entry.createdAt).toLocaleTimeString([], {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                  })}
-                </span>
-              </div>
-              {entry.questType === 'reflection' && (
-                <>
-                  {entry.prompt && <p className="text-[13px] text-dim italic">{entry.prompt}</p>}
-                  <p className="whitespace-pre-wrap">{entry.text}</p>
-                </>
-              )}
-              {entry.questType === 'timer' && (
-                <p className="text-dim">Waited out a {formatSeconds(entry.seconds)} countdown.</p>
-              )}
-              {entry.questType === 'pushups' && (
-                <p className="text-dim">Knocked out {entry.reps} push-ups.</p>
-              )}
-              <span className="text-[13px] text-mint">Earned {entry.minutesEarned} min</span>
-            </div>
+            <Card key={entry.id} size="sm" className="w-full">
+              <CardContent className="flex flex-col gap-2">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span>
+                    {QUEST_ICONS[entry.questType]} <strong>{entry.hostname}</strong>{' '}
+                    <span className="text-[13px] text-muted-foreground">· {entry.questName}</span>
+                  </span>
+                  <span className="text-muted-foreground">
+                    {new Date(entry.createdAt).toLocaleTimeString([], {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })}
+                  </span>
+                </div>
+                {entry.questType === 'reflection' && (
+                  <>
+                    {entry.prompt && (
+                      <p className="text-[13px] text-muted-foreground italic">{entry.prompt}</p>
+                    )}
+                    <p className="whitespace-pre-wrap">{entry.text}</p>
+                  </>
+                )}
+                {entry.questType === 'timer' && (
+                  <p className="text-muted-foreground">
+                    Waited out a {formatSeconds(entry.seconds)} countdown.
+                  </p>
+                )}
+                {entry.questType === 'pushups' && (
+                  <p className="text-muted-foreground">Knocked out {entry.reps} push-ups.</p>
+                )}
+                <span className="text-[13px] text-mint">Earned {entry.minutesEarned} min</span>
+              </CardContent>
+            </Card>
           ))}
         </div>
       ))}
-
-      {(entries.length > 0 || state.intercepts.length > 0) && (
-        <button className="btn btn-danger" onClick={() => void clearAll()}>
-          Reset log & stats
-        </button>
-      )}
     </section>
   );
 }
 
 function StatCard({ value, label }: { value: string; label: string }) {
   return (
-    <div className="card flex flex-col items-center gap-1 px-3 py-4 text-center">
-      <span className="text-2xl font-bold text-gold">{value}</span>
-      <span className="text-[13px] text-dim">{label}</span>
-    </div>
+    <Card size="sm" className="items-center gap-1 px-3 py-4 text-center">
+      <span className="text-2xl font-bold text-primary">{value}</span>
+      <span className="text-[13px] text-muted-foreground">{label}</span>
+    </Card>
   );
 }

@@ -1,16 +1,15 @@
-import { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAppState } from '../shared/useAppState';
 import { BlockListsSection } from './sections/BlockListsSection';
 import { QuestLogSection } from './sections/QuestLogSection';
 import { QuestsSection } from './sections/QuestsSection';
 import { ScheduleSection } from './sections/ScheduleSection';
+import { SettingsSection } from './sections/SettingsSection';
 
-const TABS = ['Block Lists', 'Schedule', 'Quests', 'Quest Log'] as const;
-type Tab = (typeof TABS)[number];
+const TABS = ['Block Lists', 'Schedule', 'Quests', 'Quest Log', 'Settings'] as const;
 
 export function OptionsApp() {
   const state = useAppState();
-  const [tab, setTab] = useState<Tab>('Block Lists');
 
   if (!state) return null;
 
@@ -18,27 +17,32 @@ export function OptionsApp() {
     <div className="mx-auto max-w-3xl px-6 pt-10 pb-20">
       <header>
         <h1 className="text-[28px] font-bold">⚔️ SideQuest</h1>
-        <p className="mt-1 text-dim">Earn your distractions.</p>
+        <p className="mt-1 text-muted-foreground">Earn your distractions.</p>
       </header>
-      <nav className="mt-7 mb-6 flex gap-2 border-b border-edge pb-3">
-        {TABS.map((t) => (
-          <button
-            key={t}
-            className={`cursor-pointer rounded-[10px] px-3 py-1.5 ${
-              t === tab ? 'bg-surface font-semibold text-ink' : 'text-dim hover:text-ink'
-            }`}
-            onClick={() => setTab(t)}
-          >
-            {t}
-          </button>
-        ))}
-      </nav>
-      <main>
-        {tab === 'Block Lists' && <BlockListsSection state={state} />}
-        {tab === 'Schedule' && <ScheduleSection state={state} />}
-        {tab === 'Quests' && <QuestsSection state={state} />}
-        {tab === 'Quest Log' && <QuestLogSection state={state} />}
-      </main>
+      <Tabs defaultValue={TABS[0]} className="mt-7 gap-6">
+        <TabsList>
+          {TABS.map((t) => (
+            <TabsTrigger key={t} value={t}>
+              {t}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        <TabsContent value="Block Lists">
+          <BlockListsSection state={state} />
+        </TabsContent>
+        <TabsContent value="Schedule">
+          <ScheduleSection state={state} />
+        </TabsContent>
+        <TabsContent value="Quests">
+          <QuestsSection state={state} />
+        </TabsContent>
+        <TabsContent value="Quest Log">
+          <QuestLogSection state={state} />
+        </TabsContent>
+        <TabsContent value="Settings">
+          <SettingsSection state={state} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
