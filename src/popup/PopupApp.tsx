@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -42,20 +42,37 @@ function SiteChips({ sites }: { sites: string[] }) {
   );
 }
 
-function minutesLeft(until: number): number {
-  return Math.max(1, Math.ceil((until - Date.now()) / 60_000));
+function formatCountdown(until: number, now: number): string {
+  const total = Math.max(0, Math.ceil((until - now) / 1000));
+  const h = Math.floor(total / 3600);
+  const m = Math.floor((total % 3600) / 60);
+  const s = total % 60;
+  const mm = String(m).padStart(2, '0');
+  const ss = String(s).padStart(2, '0');
+  return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
+}
+
+// Re-render every second so live countdowns tick down while the popup is open.
+function useNow(intervalMs = 1000): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const tick = window.setInterval(() => setNow(Date.now()), intervalMs);
+    return () => window.clearInterval(tick);
+  }, [intervalMs]);
+  return now;
 }
 
 export function PopupApp() {
   const state = useAppState();
   const [listId, setListId] = useState<string | null>(null);
   const [duration, setDuration] = useState(30);
+  const nowMs = useNow();
   if (!state) return null;
 
-  const now = new Date();
+  const now = new Date(nowMs);
   const blocks = activeTimeBlocks(state.timeBlocks, now);
   const sessions = activeAdHocSessions(state, now);
-  const livePasses = state.passes.filter((p) => p.expiresAt > Date.now());
+  const livePasses = state.passes.filter((p) => p.expiresAt > nowMs);
   const selectedListId = listId ?? state.blockLists[0]?.id ?? null;
   const hasActiveBlock = blocks.length > 0 || sessions.length > 0;
 
@@ -99,7 +116,9 @@ export function PopupApp() {
             <div key={s.id} className="flex flex-col gap-1.5">
               <div className="flex items-baseline justify-between gap-2">
                 <strong>🔒 Ad hoc session</strong>
-                <span className="text-muted-foreground">{minutesLeft(s.endsAt)} min left</span>
+                <span className="font-mono tabular-nums text-muted-foreground">
+                  {formatCountdown(s.endsAt, nowMs)} left
+                </span>
               </div>
               <SiteChips sites={sitesForLists(state, s.blockListIds)} />
             </div>
@@ -194,7 +213,9 @@ export function PopupApp() {
                 className="flex items-center justify-between gap-2 text-sm"
               >
                 <span>{p.hostname}</span>
-                <span className="text-muted-foreground">{minutesLeft(p.expiresAt)} min left</span>
+                <span className="font-mono tabular-nums text-muted-foreground">
+                  {formatCountdown(p.expiresAt, nowMs)} left
+                </span>
               </div>
             ))}
           </div>
