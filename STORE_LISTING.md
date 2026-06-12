@@ -18,7 +18,7 @@ Features:
 
 - Create named block lists from website hostnames
 - Schedule recurring blocks by day and time
-- Start ad hoc blocking sessions from the popup
+- Start ad hoc blocking sessions from the popup when no block is already active
 - Complete reflection, timer, or push-up quests to earn temporary access
 - Review local quest history and focus stats
 - Sweep already-open blocked tabs when a block starts or a pass expires
