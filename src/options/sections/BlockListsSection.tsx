@@ -2,6 +2,16 @@ import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { normalizeSite } from '../../shared/match';
 import { setState } from '../../shared/storage';
@@ -87,9 +97,7 @@ function BlockListCard({
           />
         </CardTitle>
         <CardAction>
-          <Button variant="destructive" onClick={onDelete}>
-            Delete
-          </Button>
+          <DeleteBlockListDialog list={list} onDelete={onDelete} />
         </CardAction>
       </CardHeader>
       <CardContent className="flex flex-col gap-3.5">
@@ -132,5 +140,32 @@ function BlockListCard({
         {error && <p className="text-[13px] text-destructive">{error}</p>}
       </CardContent>
     </Card>
+  );
+}
+
+function DeleteBlockListDialog({ list, onDelete }: { list: BlockList; onDelete: () => void }) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="destructive">Delete</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete block list?</DialogTitle>
+          <DialogDescription>
+            This will delete "{list.name || 'Untitled block list'}" and remove it from any time
+            blocks that use it. This cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button variant="destructive" onClick={onDelete}>
+            Delete block list
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
