@@ -13,6 +13,11 @@ Earn your distractions. A Chrome extension that blocks sites on a schedule — a
 
 Everything is stored locally in `chrome.storage.local`. No accounts, no servers.
 
+## Publishing
+
+- [Privacy policy](PRIVACY.md)
+- [Chrome Web Store listing draft](STORE_LISTING.md)
+
 ## Development
 
 ```sh
