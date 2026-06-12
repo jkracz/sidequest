@@ -7,11 +7,13 @@ import type { QuestResult, ReflectionSideQuest } from '../../shared/types';
 interface Props {
   quest: ReflectionSideQuest;
   prompt: string;
+  initialText?: string;
+  onTextChange?: (text: string) => void;
   onComplete: (result: QuestResult) => void;
 }
 
-export function ReflectionQuest({ quest, prompt, onComplete }: Props) {
-  const [text, setText] = useState('');
+export function ReflectionQuest({ quest, prompt, initialText = '', onTextChange, onComplete }: Props) {
+  const [text, setText] = useState(initialText);
   const { minChars } = quest.config;
   const remaining = minChars - text.trim().length;
   const ready = remaining <= 0;
@@ -34,7 +36,10 @@ export function ReflectionQuest({ quest, prompt, onComplete }: Props) {
             rows={6}
             className="min-h-[140px] resize-y"
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              setText(e.target.value);
+              onTextChange?.(e.target.value);
+            }}
             placeholder="Be honest. Nobody is grading this but you."
           />
           <div className="flex items-center justify-between gap-2">
