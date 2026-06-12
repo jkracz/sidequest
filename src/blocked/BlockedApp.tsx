@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dices } from 'lucide-react';
+import { Dices, Settings2 } from 'lucide-react';
 import { QuestTypeIcon } from '../components/QuestTypeIcon';
 import { decideBlock, eligibleQuests } from '../shared/blocking';
 import { hostnameOf } from '../shared/match';
@@ -184,7 +184,11 @@ export function BlockedApp() {
         <img src="/sidequestLogo32.png" alt="" className="size-5" />
         {hasQuestBypass ? 'A side quest stands between you and' : 'SideQuest blocked'}
       </p>
-      <h1 className="mt-1 mb-8 text-4xl font-bold text-primary">{hostname}</h1>
+      <h1
+        className={`mt-1 text-4xl font-bold text-primary ${hasQuestBypass ? 'mb-8' : 'mb-5'}`}
+      >
+        {hostname}
+      </h1>
 
       {quests.length === 0 && (
         <BlockedOutright hasConfiguredQuests={state.quests.length > 0} />
@@ -254,19 +258,17 @@ function openOptionsPage(): void {
 
 function BlockedOutright({ hasConfiguredQuests }: { hasConfiguredQuests: boolean }) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-[19px] font-semibold">Blocked outright</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col items-center gap-4">
-        <p className="text-muted-foreground">
-          {hasConfiguredQuests
-            ? 'This schedule has no quests selected, so there is no bypass for this page.'
-            : 'No quests are configured, so there is no bypass for this page.'}
-        </p>
-        <Button onClick={openOptionsPage}>Configure quests for blocks</Button>
-      </CardContent>
-    </Card>
+    <div className="flex flex-col items-center gap-7">
+      <p className="font-serif text-[17px] text-muted-foreground italic">
+        {hasConfiguredQuests
+          ? 'This schedule has no quests selected, so there is no bypass for this page.'
+          : 'No quests are configured, so there is no bypass for this page.'}
+      </p>
+      <Button size="lg" onClick={openOptionsPage}>
+        <Settings2 aria-hidden="true" />
+        Configure quests for blocks
+      </Button>
+    </div>
   );
 }
 
