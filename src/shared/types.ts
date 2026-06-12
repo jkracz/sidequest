@@ -17,7 +17,7 @@ export interface TimeBlock {
   /** "HH:MM" 24h. If <= startTime, the block spans midnight into the next day. */
   endTime: string;
   blockListIds: string[];
-  /** Quests eligible during this block. Empty means any quest may be offered. */
+  /** Quests eligible during this block. Empty means the page is blocked outright. */
   questIds: string[];
 }
 

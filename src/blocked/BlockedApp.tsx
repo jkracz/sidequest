@@ -129,7 +129,8 @@ export function BlockedApp() {
     return null;
   }
 
-  const quests = eligibleQuests(state, decision!.questIds);
+  const quests = eligibleQuests(state, decision!);
+  const hasQuestBypass = quests.length > 0;
   const quest =
     quests.length === 1 ? quests[0] : (quests.find((q) => q.id === chosenQuestId) ?? null);
 
@@ -180,14 +181,12 @@ export function BlockedApp() {
     <main className="mx-auto max-w-2xl px-6 pt-[14vh] pb-12 text-center">
       <p className="flex items-center justify-center gap-2 text-[17px] text-muted-foreground">
         <img src="/sidequestLogo32.png" alt="" className="size-5" />
-        A side quest stands between you and
+        {hasQuestBypass ? 'A side quest stands between you and' : 'SideQuest blocked'}
       </p>
       <h1 className="mt-1 mb-8 text-4xl font-bold text-primary">{hostname}</h1>
 
       {quests.length === 0 && (
-        <p className="text-muted-foreground">
-          No quests are configured, so this site stays blocked. Add one on the options page.
-        </p>
+        <BlockedOutright hasConfiguredQuests={state.quests.length > 0} />
       )}
 
       {quests.length > 0 && !quest && (
@@ -245,6 +244,28 @@ export function BlockedApp() {
         </>
       )}
     </main>
+  );
+}
+
+function openOptionsPage(): void {
+  window.location.href = chrome.runtime.getURL('src/options/index.html?tab=schedule');
+}
+
+function BlockedOutright({ hasConfiguredQuests }: { hasConfiguredQuests: boolean }) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-[19px] font-semibold">Blocked outright</CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col items-center gap-4">
+        <p className="text-muted-foreground">
+          {hasConfiguredQuests
+            ? 'This schedule has no quests selected, so there is no bypass for this page.'
+            : 'No quests are configured, so there is no bypass for this page.'}
+        </p>
+        <Button onClick={openOptionsPage}>Configure quests for blocks</Button>
+      </CardContent>
+    </Card>
   );
 }
 

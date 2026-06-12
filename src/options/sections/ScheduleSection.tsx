@@ -30,7 +30,7 @@ export function ScheduleSection({ state }: { state: AppState }) {
       startTime: '09:00',
       endTime: '17:00',
       blockListIds: state.blockLists.map((bl) => bl.id),
-      questIds: [],
+      questIds: state.quests.map((q) => q.id),
     };
     await setState({ timeBlocks: [...state.timeBlocks, block] });
   }
@@ -187,7 +187,9 @@ function TimeBlockCard({
             </Label>
           ))}
           {block.questIds.length === 0 && (
-            <span className="text-muted-foreground">(none selected — any quest)</span>
+            <span className="text-muted-foreground">
+              None selected. This block will deny access outright.
+            </span>
           )}
         </div>
       </CardContent>

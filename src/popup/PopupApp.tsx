@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Separator } from '@/components/ui/separator';
 import { activeAdHocSessions } from '../shared/blocking';
-import { activeTimeBlocks, formatTime } from '../shared/schedule';
+import { activeTimeBlockEndsAt, activeTimeBlocks } from '../shared/schedule';
 import { setState } from '../shared/storage';
 import { useAppState } from '../shared/useAppState';
 import type { AppState } from '../shared/types';
@@ -52,6 +52,34 @@ function formatCountdown(until: number, now: number): string {
   return h > 0 ? `${h}:${mm}:${ss}` : `${m}:${ss}`;
 }
 
+function formatClockTime(at: number): string {
+  const d = new Date(at);
+  const h = d.getHours();
+  const m = d.getMinutes();
+  const suffix = h < 12 ? 'am' : 'pm';
+  const hour12 = h % 12 === 0 ? 12 : h % 12;
+  return m === 0 ? `${hour12}${suffix}` : `${hour12}:${String(m).padStart(2, '0')}${suffix}`;
+}
+
+function CountdownTimer({ until, now }: { until: number; now: number }) {
+  const tooltip = `until ${formatClockTime(until)}`;
+
+  return (
+    <span
+      className="group inline-flex h-6 w-[6.75rem] shrink-0 items-center justify-center rounded-md bg-secondary px-2 text-xs leading-none text-muted-foreground"
+      tabIndex={0}
+      aria-label={`${formatCountdown(until, now)} left, ${tooltip}`}
+    >
+      <span className="font-mono tabular-nums group-hover:hidden group-focus-visible:hidden">
+        {formatCountdown(until, now)} left
+      </span>
+      <span className="hidden whitespace-nowrap group-hover:inline group-focus-visible:inline">
+        {tooltip}
+      </span>
+    </span>
+  );
+}
+
 // Re-render every second so live countdowns tick down while the popup is open.
 // Only runs the interval while `enabled`, so an idle popup does no per-second work.
 function useNow(enabled: boolean, intervalMs = 1000): number {
@@ -70,15 +98,20 @@ export function PopupApp() {
   const [listId, setListId] = useState<string | null>(null);
   const [duration, setDuration] = useState(30);
   // Tick only while something is actually counting down.
+  const currentMs = Date.now();
   const hasCountdown =
     !!state &&
-    (state.adHocSessions.some((s) => s.endsAt > Date.now()) ||
-      state.passes.some((p) => p.expiresAt > Date.now()));
+    (activeTimeBlocks(state.timeBlocks, new Date(currentMs)).length > 0 ||
+      state.adHocSessions.some((s) => s.endsAt > currentMs) ||
+      state.passes.some((p) => p.expiresAt > currentMs));
   const nowMs = useNow(hasCountdown);
   if (!state) return null;
 
   const now = new Date(nowMs);
   const blocks = activeTimeBlocks(state.timeBlocks, now);
+  const blockEndsAt = new Map(
+    blocks.map((tb) => [tb.id, activeTimeBlockEndsAt(tb, now) ?? nowMs])
+  );
   const sessions = activeAdHocSessions(state, now);
   const livePasses = state.passes.filter((p) => p.expiresAt > nowMs);
   const selectedListId = listId ?? state.blockLists[0]?.id ?? null;
@@ -115,7 +148,7 @@ export function PopupApp() {
             <div key={tb.id} className="flex flex-col gap-1.5">
               <div className="flex items-baseline justify-between gap-2">
                 <strong>{tb.label}</strong>
-                <span className="text-muted-foreground">until {formatTime(tb.endTime)}</span>
+                <CountdownTimer until={blockEndsAt.get(tb.id) ?? nowMs} now={nowMs} />
               </div>
               <SiteChips sites={sitesForLists(state, tb.blockListIds)} />
             </div>
@@ -124,9 +157,7 @@ export function PopupApp() {
             <div key={s.id} className="flex flex-col gap-1.5">
               <div className="flex items-baseline justify-between gap-2">
                 <strong>🔒 Ad hoc session</strong>
-                <span className="font-mono tabular-nums text-muted-foreground">
-                  {formatCountdown(s.endsAt, nowMs)} left
-                </span>
+                <CountdownTimer until={s.endsAt} now={nowMs} />
               </div>
               <SiteChips sites={sitesForLists(state, s.blockListIds)} />
             </div>
@@ -221,9 +252,7 @@ export function PopupApp() {
                 className="flex items-center justify-between gap-2 text-sm"
               >
                 <span>{p.hostname}</span>
-                <span className="font-mono tabular-nums text-muted-foreground">
-                  {formatCountdown(p.expiresAt, nowMs)} left
-                </span>
+                <CountdownTimer until={p.expiresAt} now={nowMs} />
               </div>
             ))}
           </div>
