@@ -57,9 +57,10 @@ export function PopupApp() {
   const sessions = activeAdHocSessions(state, now);
   const livePasses = state.passes.filter((p) => p.expiresAt > Date.now());
   const selectedListId = listId ?? state.blockLists[0]?.id ?? null;
+  const hasActiveBlock = blocks.length > 0 || sessions.length > 0;
 
   async function startSession() {
-    if (!selectedListId || sessions.length > 0) return;
+    if (!selectedListId || hasActiveBlock) return;
     const startedAt = Date.now();
     await setState({
       adHocSessions: [
@@ -106,16 +107,18 @@ export function PopupApp() {
         </div>
       )}
 
-      {state.blockLists.length > 0 && sessions.length > 0 && (
+      {state.blockLists.length > 0 && hasActiveBlock && (
         <>
           <Separator />
           <p className="text-xs text-muted-foreground">
-            A session is already running. See it through — then you can start another.
+            {sessions.length > 0
+              ? 'A session is already running. See it through, then you can start another.'
+              : 'A scheduled block is active. Finish this block before starting an ad hoc session.'}
           </p>
         </>
       )}
 
-      {state.blockLists.length > 0 && sessions.length === 0 && (
+      {state.blockLists.length > 0 && !hasActiveBlock && (
         <>
           <Separator />
           <div className="flex flex-col gap-2">
