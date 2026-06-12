@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { PushupSideQuest, QuestResult } from '../../shared/types';
@@ -54,7 +55,7 @@ export function PushupQuest({ quest, initialCount = 0, onCountChange, onComplete
             if (!done) countRep();
           }}
         >
-          {done ? '💪' : `${count}/${target}`}
+          {done ? <Check aria-label="Done" className="size-16" strokeWidth={3} /> : `${count}/${target}`}
         </div>
         <Button
           size="lg"

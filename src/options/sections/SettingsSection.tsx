@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogClose,
@@ -29,7 +29,6 @@ export function SettingsSection({ state }: { state: AppState }) {
       <Card className="w-full">
         <CardHeader>
           <CardTitle>Appearance</CardTitle>
-          <CardDescription>How SideQuest looks on every page.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between gap-4">
@@ -66,8 +65,42 @@ export function SettingsSection({ state }: { state: AppState }) {
 
       <Card className="w-full">
         <CardHeader>
+          <CardTitle>Quest log</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex flex-col gap-0.5">
+              <span className="font-medium">Time saved per resisted visit</span>
+              <span className="text-muted-foreground">
+                A resisted visit is one where you hit the wall and walked away without earning a
+                pass. The quest log's time-saved estimate counts this many minutes for each.
+              </span>
+            </div>
+            <Label className="shrink-0 gap-1.5 font-normal text-muted-foreground">
+              <Input
+                type="number"
+                className="w-16"
+                min={1}
+                max={120}
+                value={state.settings.minutesPerResistedVisit}
+                onChange={(e) => {
+                  const v = Number(e.target.value);
+                  if (Number.isFinite(v) && v >= 1) {
+                    void setState({
+                      settings: { ...state.settings, minutesPerResistedVisit: v },
+                    });
+                  }
+                }}
+              />
+              min
+            </Label>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="w-full">
+        <CardHeader>
           <CardTitle>Danger zone</CardTitle>
-          <CardDescription>These cannot be undone.</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <DangerRow

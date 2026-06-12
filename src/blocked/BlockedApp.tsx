@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Dices } from 'lucide-react';
+import { QuestTypeIcon } from '../components/QuestTypeIcon';
 import { decideBlock, eligibleQuests } from '../shared/blocking';
 import { hostnameOf } from '../shared/match';
-import { QUEST_ICONS } from '../shared/quests';
 import { getState, setState } from '../shared/storage';
 import type { AppState, QuestResult, ReflectionSideQuest, SideQuest } from '../shared/types';
 import { PushupQuest } from './quests/PushupQuest';
@@ -289,8 +290,9 @@ function QuestPicker({
             className="h-auto justify-between gap-3 px-4 py-3"
             onClick={() => onChoose(q.id)}
           >
-            <span>
-              {QUEST_ICONS[q.type]} <strong>{q.name}</strong>
+            <span className="flex items-center gap-2">
+              <QuestTypeIcon type={q.type} className="text-muted-foreground" />
+              <strong>{q.name}</strong>
             </span>
             <span className="text-[13px] font-normal text-muted-foreground">
               earns {q.passDurationMinutes} min
@@ -298,7 +300,8 @@ function QuestPicker({
           </Button>
         ))}
         <Button onClick={() => onChoose(quests[Math.floor(Math.random() * quests.length)].id)}>
-          🎲 Surprise me
+          <Dices aria-hidden="true" />
+          Surprise me
         </Button>
       </CardContent>
     </Card>

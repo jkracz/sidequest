@@ -53,7 +53,9 @@ export function OptionsApp() {
           <img src="/sidequestLogo48.png" alt="" className="size-9" />
           SideQuest
         </h1>
-        <p className="mt-1 text-muted-foreground">Earn your distractions.</p>
+        <p className="mt-1 font-serif text-[15px] text-muted-foreground italic">
+          Earn your distractions.
+        </p>
       </header>
       <Tabs value={tab} onValueChange={changeTab} className="mt-7 gap-6">
         <TabsList>

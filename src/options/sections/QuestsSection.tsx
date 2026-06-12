@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { QuestTypeIcon } from '../../components/QuestTypeIcon';
 import { setState } from '../../shared/storage';
 import type {
   AppState,
@@ -22,11 +23,9 @@ export function QuestsSection({ state }: { state: AppState }) {
       {state.quests.map((quest) => (
         <Card key={quest.id} className="w-full">
           <CardHeader>
-            <CardTitle>
-              {quest.name}{' '}
-              <span className="text-[13px] font-normal text-muted-foreground">
-                ({quest.type})
-              </span>
+            <CardTitle className="flex items-center gap-2">
+              <QuestTypeIcon type={quest.type} className="text-muted-foreground" />
+              {quest.name}
             </CardTitle>
           </CardHeader>
           <CardContent className="flex flex-col gap-3.5">
@@ -49,7 +48,6 @@ export function QuestsSection({ state }: { state: AppState }) {
           </CardContent>
         </Card>
       ))}
-      <p className="text-muted-foreground">More quest types coming soon.</p>
     </section>
   );
 }

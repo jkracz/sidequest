@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Lock, Settings, Ticket } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -61,12 +62,24 @@ function formatClockTime(at: number): string {
   return m === 0 ? `${hour12}${suffix}` : `${hour12}:${String(m).padStart(2, '0')}${suffix}`;
 }
 
-function CountdownTimer({ until, now }: { until: number; now: number }) {
+function CountdownTimer({
+  until,
+  now,
+  variant = 'default',
+}: {
+  until: number;
+  now: number;
+  variant?: 'default' | 'pass';
+}) {
   const tooltip = `until ${formatClockTime(until)}`;
 
   return (
     <span
-      className="group inline-flex h-6 w-[6.75rem] shrink-0 items-center justify-center rounded-md bg-secondary px-2 text-xs leading-none text-muted-foreground"
+      className={`group inline-flex h-6 w-[6.75rem] shrink-0 items-center justify-center rounded-md px-2 text-xs leading-none ${
+        variant === 'pass'
+          ? 'bg-mint font-medium text-mint-deep'
+          : 'bg-secondary text-muted-foreground'
+      }`}
       tabIndex={0}
       aria-label={`${formatCountdown(until, now)} left, ${tooltip}`}
     >
@@ -135,10 +148,22 @@ export function PopupApp() {
 
   return (
     <div className="flex w-[320px] flex-col gap-4 p-4">
-      <h1 className="flex items-center gap-2 text-lg font-bold">
-        <img src="/sidequestLogo32.png" alt="" className="size-6" />
-        SideQuest
-      </h1>
+      <header className="flex items-center justify-between gap-2">
+        <h1 className="flex items-center gap-2 text-lg font-bold">
+          <img src="/sidequestLogo32.png" alt="" className="size-6" />
+          SideQuest
+        </h1>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="text-muted-foreground"
+          title="Open SideQuest settings"
+          aria-label="Open SideQuest settings"
+          onClick={() => void chrome.runtime.openOptionsPage()}
+        >
+          <Settings />
+        </Button>
+      </header>
 
       {blocks.length === 0 && sessions.length === 0 ? (
         <p className="text-muted-foreground">No blocks active. Roam freely.</p>
@@ -155,25 +180,17 @@ export function PopupApp() {
           ))}
           {sessions.map((s) => (
             <div key={s.id} className="flex flex-col gap-1.5">
-              <div className="flex items-baseline justify-between gap-2">
-                <strong>🔒 Ad hoc session</strong>
+              <div className="flex items-center justify-between gap-2">
+                <strong className="flex items-center gap-1.5">
+                  <Lock aria-hidden="true" className="size-3.5 text-muted-foreground" />
+                  Ad hoc session
+                </strong>
                 <CountdownTimer until={s.endsAt} now={nowMs} />
               </div>
               <SiteChips sites={sitesForLists(state, s.blockListIds)} />
             </div>
           ))}
         </div>
-      )}
-
-      {state.blockLists.length > 0 && hasActiveBlock && (
-        <>
-          <Separator />
-          <p className="text-xs text-muted-foreground">
-            {sessions.length > 0
-              ? 'A session is already running. See it through, then you can start another.'
-              : 'A scheduled block is active. Finish this block before starting an ad hoc session.'}
-          </p>
-        </>
       )}
 
       {state.blockLists.length > 0 && !hasActiveBlock && (
@@ -242,26 +259,25 @@ export function PopupApp() {
       {livePasses.length > 0 && (
         <>
           <Separator />
-          <div>
-            <h2 className="mb-1.5 text-[13px] font-semibold tracking-wider text-muted-foreground uppercase">
-              Active passes
+          <div className="flex flex-col gap-1.5">
+            <h2 className="text-[13px] font-semibold tracking-wider text-muted-foreground uppercase">
+              Earned passes
             </h2>
             {livePasses.map((p) => (
               <div
                 key={p.hostname + p.earnedAt}
                 className="flex items-center justify-between gap-2 text-sm"
               >
-                <span>{p.hostname}</span>
-                <CountdownTimer until={p.expiresAt} now={nowMs} />
+                <span className="flex items-center gap-1.5">
+                  <Ticket aria-hidden="true" className="size-3.5 text-mint" />
+                  {p.hostname}
+                </span>
+                <CountdownTimer variant="pass" until={p.expiresAt} now={nowMs} />
               </div>
             ))}
           </div>
         </>
       )}
-
-      <Button variant="outline" onClick={() => void chrome.runtime.openOptionsPage()}>
-        Open
-      </Button>
     </div>
   );
 }
