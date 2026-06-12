@@ -7,24 +7,33 @@ import type { QuestResult, TimerSideQuest } from '../../shared/types';
 
 interface Props {
   quest: TimerSideQuest;
+  startedAt?: number;
+  onStartedAtChange?: (startedAt: number) => void;
   onComplete: (result: QuestResult) => void;
 }
 
-export function TimerQuest({ quest, onComplete }: Props) {
+export function TimerQuest({ quest, startedAt: initialStartedAt, onStartedAtChange, onComplete }: Props) {
   const total = Math.max(1, quest.config.seconds);
-  const [remaining, setRemaining] = useState(total);
+  const [startedAt] = useState(() => initialStartedAt ?? Date.now());
+  const [remaining, setRemaining] = useState(() =>
+    Math.max(0, Math.ceil((startedAt + total * 1000 - Date.now()) / 1000))
+  );
+
+  useEffect(() => {
+    if (initialStartedAt === undefined) onStartedAtChange?.(startedAt);
+  }, [initialStartedAt, onStartedAtChange, startedAt]);
 
   // Count against the wall clock rather than accumulating interval ticks, so
   // background-tab throttling can't stretch the wait.
   useEffect(() => {
-    const endAt = Date.now() + total * 1000;
+    const endAt = startedAt + total * 1000;
     const tick = window.setInterval(() => {
       const left = Math.max(0, Math.ceil((endAt - Date.now()) / 1000));
       setRemaining(left);
       if (left === 0) window.clearInterval(tick);
     }, 250);
     return () => window.clearInterval(tick);
-  }, [total]);
+  }, [startedAt, total]);
 
   const done = remaining === 0;
 

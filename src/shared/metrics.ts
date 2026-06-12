@@ -22,9 +22,19 @@ export function computeMetrics(state: AppState, now = Date.now()): Metrics {
   };
 }
 
-function dayKey(t: number): string {
+export function dayKey(t: number): string {
   const d = new Date(t);
   return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+}
+
+/** Logged events (quests + resists) per local day, keyed by dayKey. */
+export function activityByDay(state: AppState): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const t of [...state.history.map((h) => h.createdAt), ...state.resists.map((r) => r.at)]) {
+    const key = dayKey(t);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return counts;
 }
 
 function computeStreak(timestamps: number[], now: number): number {

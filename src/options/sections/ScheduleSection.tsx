@@ -2,6 +2,16 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
@@ -20,7 +30,7 @@ export function ScheduleSection({ state }: { state: AppState }) {
       startTime: '09:00',
       endTime: '17:00',
       blockListIds: state.blockLists.map((bl) => bl.id),
-      questIds: [],
+      questIds: state.quests.map((q) => q.id),
     };
     await setState({ timeBlocks: [...state.timeBlocks, block] });
   }
@@ -98,9 +108,7 @@ function TimeBlockCard({
         </CardTitle>
         <CardAction className="flex items-center gap-2">
           {active && <Badge className="bg-mint text-mint-deep">Active now</Badge>}
-          <Button variant="destructive" onClick={onDelete}>
-            Delete
-          </Button>
+          <DeleteTimeBlockDialog block={block} onDelete={onDelete} />
         </CardAction>
       </CardHeader>
       <CardContent className="flex flex-col gap-3.5">
@@ -179,10 +187,39 @@ function TimeBlockCard({
             </Label>
           ))}
           {block.questIds.length === 0 && (
-            <span className="text-muted-foreground">(none selected — any quest)</span>
+            <span className="text-muted-foreground">
+              None selected. This block will deny access outright.
+            </span>
           )}
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function DeleteTimeBlockDialog({ block, onDelete }: { block: TimeBlock; onDelete: () => void }) {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="destructive">Delete</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Delete time block?</DialogTitle>
+          <DialogDescription>
+            This will delete "{block.label || 'Untitled time block'}" from your schedule. This
+            cannot be undone.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <DialogClose asChild>
+            <Button variant="outline">Cancel</Button>
+          </DialogClose>
+          <Button variant="destructive" onClick={onDelete}>
+            Delete time block
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

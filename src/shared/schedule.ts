@@ -25,6 +25,29 @@ export function activeTimeBlocks(timeBlocks: TimeBlock[], now: Date): TimeBlock[
 }
 
 /**
+ * Epoch ms when the current active occurrence of a time block ends, or null
+ * when the block is not active at `now`.
+ */
+export function activeTimeBlockEndsAt(tb: TimeBlock, now: Date): number | null {
+  if (!isTimeBlockActive(tb, now)) return null;
+
+  const day = now.getDay() as DayOfWeek;
+  const mins = now.getHours() * 60 + now.getMinutes();
+  const start = minutesOf(tb.startTime);
+  const end = minutesOf(tb.endTime);
+  const endsAt = new Date(now);
+  endsAt.setHours(Math.floor(end / 60), end % 60, 0, 0);
+
+  if (start < end) return endsAt.getTime();
+
+  if (tb.days.includes(day) && mins >= start) {
+    endsAt.setDate(endsAt.getDate() + 1);
+  }
+
+  return endsAt.getTime();
+}
+
+/**
  * Epoch ms of the next moment any time block begins, or null if there are
  * no scheduled blocks. Used to schedule the tab-sweep alarm.
  */

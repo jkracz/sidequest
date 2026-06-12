@@ -6,9 +6,11 @@ export interface BlockDecision {
   blocked: boolean;
   /** Quest ids eligible for the active time blocks that matched. */
   questIds: string[];
+  /** Ad hoc sessions do not choose quests, so they allow any configured quest. */
+  allowAnyQuest: boolean;
 }
 
-const NOT_BLOCKED: BlockDecision = { blocked: false, questIds: [] };
+const NOT_BLOCKED: BlockDecision = { blocked: false, questIds: [], allowAnyQuest: false };
 
 export function activeAdHocSessions(state: AppState, now: Date): AppState['adHocSessions'] {
   return state.adHocSessions.filter((s) => s.endsAt > now.getTime());
@@ -18,17 +20,17 @@ export function decideBlock(state: AppState, url: string, now: Date): BlockDecis
   const hostname = hostnameOf(url);
   if (!hostname) return NOT_BLOCKED;
 
-  // Enforcement comes from scheduled time blocks and from user-started ad hoc
-  // sessions; sessions don't restrict quests, so any quest may be offered.
-  const sources: { blockListIds: string[]; questIds: string[] }[] = [
-    ...activeTimeBlocks(state.timeBlocks, now),
+  const sources: { blockListIds: string[]; questIds: string[]; allowAnyQuest: boolean }[] = [
+    ...activeTimeBlocks(state.timeBlocks, now).map((tb) => ({ ...tb, allowAnyQuest: false })),
     ...activeAdHocSessions(state, now).map((s) => ({
       blockListIds: s.blockListIds,
       questIds: [],
+      allowAnyQuest: true,
     })),
   ];
 
   const questIds = new Set<string>();
+  let allowAnyQuest = false;
   let matched = false;
   for (const source of sources) {
     const sites = state.blockLists
@@ -36,6 +38,7 @@ export function decideBlock(state: AppState, url: string, now: Date): BlockDecis
       .flatMap((bl) => bl.sites);
     if (sites.some((site) => hostnameMatches(hostname, site))) {
       matched = true;
+      if (source.allowAnyQuest) allowAnyQuest = true;
       for (const q of source.questIds) questIds.add(q);
     }
   }
@@ -46,16 +49,17 @@ export function decideBlock(state: AppState, url: string, now: Date): BlockDecis
   );
   if (hasPass) return NOT_BLOCKED;
 
-  return { blocked: true, questIds: [...questIds] };
+  return { blocked: true, questIds: [...questIds], allowAnyQuest };
 }
 
 /**
- * The quests the user may choose from for a block decision: the ones the
- * matching time blocks named, or every configured quest if none were.
+ * The quests the user may choose from for a block decision: every configured
+ * quest for ad hoc sessions, or only the ones matching scheduled blocks named.
  */
-export function eligibleQuests(state: AppState, questIds: string[]): SideQuest[] {
-  const named = questIds
+export function eligibleQuests(state: AppState, decision: BlockDecision): SideQuest[] {
+  if (decision.allowAnyQuest) return state.quests;
+  const named = decision.questIds
     .map((id) => state.quests.find((q) => q.id === id))
     .filter((q): q is SideQuest => q !== undefined);
-  return named.length > 0 ? named : state.quests;
+  return named;
 }
