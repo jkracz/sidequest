@@ -16,7 +16,10 @@ export function OptionsApp() {
   return (
     <div className="mx-auto max-w-3xl px-6 pt-10 pb-20">
       <header>
-        <h1 className="text-[28px] font-bold">⚔️ SideQuest</h1>
+        <h1 className="flex items-center gap-3 text-[28px] font-bold">
+          <img src="/sidequestLogo48.png" alt="" className="size-9" />
+          SideQuest
+        </h1>
         <p className="mt-1 text-muted-foreground">Earn your distractions.</p>
       </header>
       <Tabs defaultValue={TABS[0]} className="mt-7 gap-6">

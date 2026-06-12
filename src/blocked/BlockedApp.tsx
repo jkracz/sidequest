@@ -122,7 +122,10 @@ export function BlockedApp() {
 
   return (
     <main className="mx-auto max-w-2xl px-6 pt-[14vh] pb-12 text-center">
-      <p className="text-[17px] text-muted-foreground">⚔️ A side quest stands between you and</p>
+      <p className="flex items-center justify-center gap-2 text-[17px] text-muted-foreground">
+        <img src="/sidequestLogo32.png" alt="" className="size-5" />
+        A side quest stands between you and
+      </p>
       <h1 className="mt-1 mb-8 text-4xl font-bold text-primary">{hostname}</h1>
 
       {quests.length === 0 && (

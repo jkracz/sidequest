@@ -76,7 +76,10 @@ export function PopupApp() {
 
   return (
     <div className="flex w-[320px] flex-col gap-4 p-4">
-      <h1 className="text-lg font-bold">⚔️ SideQuest</h1>
+      <h1 className="flex items-center gap-2 text-lg font-bold">
+        <img src="/sidequestLogo32.png" alt="" className="size-6" />
+        SideQuest
+      </h1>
 
       {blocks.length === 0 && sessions.length === 0 ? (
         <p className="text-muted-foreground">No blocks active. Roam freely.</p>
