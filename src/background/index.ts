@@ -1,9 +1,21 @@
-import { decideBlock } from '../shared/blocking';
-import { nextBlockStart } from '../shared/schedule';
+import { activeAdHocSessions, decideBlock } from '../shared/blocking';
+import { activeTimeBlockEndsAt, activeTimeBlocks, nextBlockStart } from '../shared/schedule';
 import { getState, persistMigrationIfNeeded, setState } from '../shared/storage';
 import type { AppState } from '../shared/types';
 
 const WAKE_ALARM = 'sidequest-wake';
+const ON_ICON_PATH = {
+  16: 'sidequestLogo16.png',
+  32: 'sidequestLogo32.png',
+  48: 'sidequestLogo48.png',
+  128: 'sidequestLogo128.png',
+} as const;
+const OFF_ICON_PATH = {
+  16: 'sidequestOffLogo16.png',
+  32: 'sidequestOffLogo32.png',
+  48: 'sidequestOffLogo48.png',
+  128: 'sidequestOffLogo128.png',
+} as const;
 
 void persistMigrationIfNeeded();
 
@@ -45,6 +57,14 @@ async function pruneExpired(): Promise<void> {
   }
 }
 
+async function updateActionIcon(state?: AppState): Promise<void> {
+  const s = state ?? (await getState());
+  const now = new Date();
+  const hasRunningBlock =
+    activeTimeBlocks(s.timeBlocks, now).length > 0 || activeAdHocSessions(s, now).length > 0;
+  await chrome.action.setIcon({ path: hasRunningBlock ? ON_ICON_PATH : OFF_ICON_PATH });
+}
+
 /**
  * Schedule a single alarm for the next moment enforcement could change: the
  * next time-block start, the next pass expiry, or the next ad hoc session
@@ -52,10 +72,15 @@ async function pruneExpired(): Promise<void> {
  */
 async function scheduleWake(): Promise<void> {
   const state = await getState();
-  const now = Date.now();
+  const nowDate = new Date();
+  const now = nowDate.getTime();
   const candidates: number[] = [];
-  const blockStart = nextBlockStart(state.timeBlocks, new Date());
+  const blockStart = nextBlockStart(state.timeBlocks, nowDate);
   if (blockStart !== null) candidates.push(blockStart);
+  for (const tb of activeTimeBlocks(state.timeBlocks, nowDate)) {
+    const blockEnd = activeTimeBlockEndsAt(tb, nowDate);
+    if (blockEnd !== null) candidates.push(blockEnd);
+  }
   for (const p of state.passes) {
     if (p.expiresAt > now) candidates.push(p.expiresAt);
   }
@@ -82,6 +107,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name !== WAKE_ALARM) return;
   void (async () => {
     await pruneExpired();
+    await updateActionIcon();
     await sweepTabs();
     await scheduleWake();
   })();
@@ -92,12 +118,14 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
   if (changes.blockLists || changes.timeBlocks || changes.passes || changes.adHocSessions) {
+    void updateActionIcon();
     void sweepTabs();
     void scheduleWake();
   }
 });
 
 chrome.runtime.onInstalled.addListener(() => {
+  void updateActionIcon();
   void sweepTabs();
   void scheduleWake();
 });
@@ -105,6 +133,7 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onStartup.addListener(() => {
   void (async () => {
     await pruneExpired();
+    await updateActionIcon();
     await sweepTabs();
     await scheduleWake();
   })();
