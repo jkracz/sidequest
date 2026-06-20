@@ -4,7 +4,8 @@ export default defineManifest({
   manifest_version: 3,
   name: 'SideQuest',
   version: '0.1.0',
-  description: 'Earn your distractions. Blocked sites cost a side quest.',
+  description:
+    'Block distracting sites on a schedule. To get back in, complete a side quest.',
   icons: {
     16: 'sidequestLogo16.png',
     32: 'sidequestLogo32.png',
