@@ -10,18 +10,36 @@ export interface BlockDecision {
   allowAnyQuest: boolean;
 }
 
-const NOT_BLOCKED: BlockDecision = { blocked: false, questIds: [], allowAnyQuest: false };
+const NOT_BLOCKED: BlockDecision = {
+  blocked: false,
+  questIds: [],
+  allowAnyQuest: false,
+};
 
-export function activeAdHocSessions(state: AppState, now: Date): AppState['adHocSessions'] {
+export function activeAdHocSessions(
+  state: AppState,
+  now: Date,
+): AppState['adHocSessions'] {
   return state.adHocSessions.filter((s) => s.endsAt > now.getTime());
 }
 
-export function decideBlock(state: AppState, url: string, now: Date): BlockDecision {
+export function decideBlock(
+  state: AppState,
+  url: string,
+  now: Date,
+): BlockDecision {
   const hostname = hostnameOf(url);
   if (!hostname) return NOT_BLOCKED;
 
-  const sources: { blockListIds: string[]; questIds: string[]; allowAnyQuest: boolean }[] = [
-    ...activeTimeBlocks(state.timeBlocks, now).map((tb) => ({ ...tb, allowAnyQuest: false })),
+  const sources: {
+    blockListIds: string[];
+    questIds: string[];
+    allowAnyQuest: boolean;
+  }[] = [
+    ...activeTimeBlocks(state.timeBlocks, now).map((tb) => ({
+      ...tb,
+      allowAnyQuest: false,
+    })),
     ...activeAdHocSessions(state, now).map((s) => ({
       blockListIds: s.blockListIds,
       questIds: [],
@@ -45,7 +63,7 @@ export function decideBlock(state: AppState, url: string, now: Date): BlockDecis
   if (!matched) return NOT_BLOCKED;
 
   const hasPass = state.passes.some(
-    (p) => p.expiresAt > now.getTime() && hostnameMatches(hostname, p.hostname)
+    (p) => p.expiresAt > now.getTime() && hostnameMatches(hostname, p.hostname),
   );
   if (hasPass) return NOT_BLOCKED;
 
@@ -56,7 +74,10 @@ export function decideBlock(state: AppState, url: string, now: Date): BlockDecis
  * The quests the user may choose from for a block decision: every configured
  * quest for ad hoc sessions, or only the ones matching scheduled blocks named.
  */
-export function eligibleQuests(state: AppState, decision: BlockDecision): SideQuest[] {
+export function eligibleQuests(
+  state: AppState,
+  decision: BlockDecision,
+): SideQuest[] {
   if (decision.allowAnyQuest) return state.quests;
   const named = decision.questIds
     .map((id) => state.quests.find((q) => q.id === id))

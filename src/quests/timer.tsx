@@ -9,11 +9,15 @@ import { formatSeconds } from '../shared/schedule';
 import type { QuestKindUi, QuestRuntimeProps } from './types';
 import type { QuestResult, SideQuest, TimerSideQuest } from '../shared/types';
 
-function TimerRuntime({ quest, ctx, onComplete }: QuestRuntimeProps<TimerSideQuest>) {
+function TimerRuntime({
+  quest,
+  ctx,
+  onComplete,
+}: QuestRuntimeProps<TimerSideQuest>) {
   const total = Math.max(1, quest.config.seconds);
   const [startedAt] = useState(() => ctx.num('startedAt') ?? Date.now());
   const [remaining, setRemaining] = useState(() =>
-    Math.max(0, Math.ceil((startedAt + total * 1000 - Date.now()) / 1000))
+    Math.max(0, Math.ceil((startedAt + total * 1000 - Date.now()) / 1000)),
   );
 
   useEffect(() => {
@@ -43,13 +47,18 @@ function TimerRuntime({ quest, ctx, onComplete }: QuestRuntimeProps<TimerSideQue
         <div className="text-6xl font-bold tabular-nums" aria-live="polite">
           {formatSeconds(remaining)}
         </div>
-        <Progress className="h-1.5" value={((total - remaining) / total) * 100} />
+        <Progress
+          className="h-1.5"
+          value={((total - remaining) / total) * 100}
+        />
         <Button
           size="lg"
           disabled={!done}
           onClick={() => onComplete({ questType: 'timer', seconds: total })}
         >
-          {done ? `Earn ${quest.passDurationMinutes} minutes` : 'Counting down…'}
+          {done
+            ? `Earn ${quest.passDurationMinutes} minutes`
+            : 'Counting down…'}
         </Button>
       </CardContent>
     </Card>
@@ -76,9 +85,15 @@ function TimerEditor({
   );
 }
 
-function TimerLogDetail({ result }: { result: Extract<QuestResult, { questType: 'timer' }> }) {
+function TimerLogDetail({
+  result,
+}: {
+  result: Extract<QuestResult, { questType: 'timer' }>;
+}) {
   return (
-    <p className="text-muted-foreground">Waited out a {formatSeconds(result.seconds)} countdown.</p>
+    <p className="text-muted-foreground">
+      Waited out a {formatSeconds(result.seconds)} countdown.
+    </p>
   );
 }
 

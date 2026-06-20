@@ -1,13 +1,29 @@
 import { describe, expect, it } from 'vitest';
 
-import { type Grade, type RoundState, initRound, reduceRound } from './flashcard-round';
+import {
+  type Grade,
+  type RoundState,
+  initRound,
+  reduceRound,
+} from './flashcard-round';
 import type { FlashcardItem } from '../shared/types';
 
 const deck = (n: number): FlashcardItem[] =>
-  Array.from({ length: n }, (_, i) => ({ id: `c${i}`, front: `q${i}`, back: `a${i}` }));
+  Array.from({ length: n }, (_, i) => ({
+    id: `c${i}`,
+    front: `q${i}`,
+    back: `a${i}`,
+  }));
 
-function play(cards: FlashcardItem[], required: number | null, grades: Grade[]): RoundState {
-  return grades.reduce((s, result) => reduceRound(s, { result, required }), initRound(cards));
+function play(
+  cards: FlashcardItem[],
+  required: number | null,
+  grades: Grade[],
+): RoundState {
+  return grades.reduce(
+    (s, result) => reduceRound(s, { result, required }),
+    initRound(cards),
+  );
 }
 
 describe('reduceRound — review only (no threshold)', () => {

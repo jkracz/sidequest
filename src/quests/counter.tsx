@@ -20,10 +20,16 @@ function unitFor(count: number, unit: string): string {
   return count === 1 ? unit : pluralize(unit);
 }
 
-function CounterRuntime({ quest, ctx, onComplete }: QuestRuntimeProps<CounterSideQuest>) {
+function CounterRuntime({
+  quest,
+  ctx,
+  onComplete,
+}: QuestRuntimeProps<CounterSideQuest>) {
   const target = Math.max(1, quest.config.target);
   const unit = unitFor(target, quest.config.unit);
-  const [count, setCount] = useState(() => Math.min(target, Math.max(0, ctx.num('count') ?? 0)));
+  const [count, setCount] = useState(() =>
+    Math.min(target, Math.max(0, ctx.num('count') ?? 0)),
+  );
   const done = count >= target;
 
   const countOne = useCallback(() => {
@@ -51,8 +57,8 @@ function CounterRuntime({ quest, ctx, onComplete }: QuestRuntimeProps<CounterSid
     <Card>
       <CardContent className="flex flex-col items-center gap-5 py-2">
         <p className="text-muted-foreground">
-          {quest.config.prompt} {target} {unit}. Count one with a tap or the space bar - honor
-          system.
+          {quest.config.prompt} {target} {unit}. Count one with a tap or the
+          space bar - honor system.
         </p>
         <div
           role="button"
@@ -75,9 +81,13 @@ function CounterRuntime({ quest, ctx, onComplete }: QuestRuntimeProps<CounterSid
         <Button
           size="lg"
           disabled={!done}
-          onClick={() => onComplete({ questType: 'counter', count: target, unit })}
+          onClick={() =>
+            onComplete({ questType: 'counter', count: target, unit })
+          }
         >
-          {done ? `Earn ${quest.passDurationMinutes} minutes` : `${target - count} ${unit} to go`}
+          {done
+            ? `Earn ${quest.passDurationMinutes} minutes`
+            : `${target - count} ${unit} to go`}
         </Button>
       </CardContent>
     </Card>
@@ -124,7 +134,11 @@ function CounterEditor({
   );
 }
 
-function CounterLogDetail({ result }: { result: Extract<QuestResult, { questType: 'counter' }> }) {
+function CounterLogDetail({
+  result,
+}: {
+  result: Extract<QuestResult, { questType: 'counter' }>;
+}) {
   return (
     <p className="text-muted-foreground">
       Counted off {result.count} {result.unit}.

@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react';
 import { Layers, Settings2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -11,7 +18,12 @@ import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { NumberInput } from './fields';
 import { type Grade, initRound, reduceRound } from './flashcard-round';
 import type { QuestKindUi, QuestRuntimeProps } from './types';
-import type { FlashcardItem, FlashcardSideQuest, QuestResult, SideQuest } from '../shared/types';
+import type {
+  FlashcardItem,
+  FlashcardSideQuest,
+  QuestResult,
+  SideQuest,
+} from '../shared/types';
 
 /** Beyond this a single deck is probably better split up; warn but don't block. */
 const SOFT_CARD_LIMIT = 5000;
@@ -39,13 +51,16 @@ function pickCards(
   cards: FlashcardItem[],
   n: number,
   order: 'random' | 'sequential',
-  seed: number
+  seed: number,
 ): FlashcardItem[] {
   if (cards.length === 0) return [];
   const count = Math.min(Math.max(1, n), cards.length);
   if (order === 'sequential') {
     const offset = (seed * count) % cards.length;
-    return Array.from({ length: count }, (_, i) => cards[(offset + i) % cards.length]);
+    return Array.from(
+      { length: count },
+      (_, i) => cards[(offset + i) % cards.length],
+    );
   }
   return cards
     .map((c) => ({ c, k: hashString(`${seed}:${c.id}`) }))
@@ -86,7 +101,9 @@ function EmptyDeckNotice() {
         <Button
           size="lg"
           onClick={() => {
-            window.location.href = chrome.runtime.getURL('src/options/index.html?tab=quests');
+            window.location.href = chrome.runtime.getURL(
+              'src/options/index.html?tab=quests',
+            );
           }}
         >
           <Settings2 aria-hidden="true" />
@@ -97,7 +114,13 @@ function EmptyDeckNotice() {
   );
 }
 
-function CardFace({ children, back = false }: { children: ReactNode; back?: boolean }) {
+function CardFace({
+  children,
+  back = false,
+}: {
+  children: ReactNode;
+  back?: boolean;
+}) {
   return (
     <div
       className="absolute inset-0 flex flex-col overflow-hidden rounded-xl border border-border bg-card"
@@ -105,19 +128,28 @@ function CardFace({ children, back = false }: { children: ReactNode; back?: bool
         backfaceVisibility: 'hidden',
         transform: back ? 'rotateY(180deg)' : undefined,
         // Lift the active card off the pile beneath it.
-        boxShadow: '0 14px 30px -12px rgb(0 0 0 / 0.45), 0 3px 8px -3px rgb(0 0 0 / 0.25)',
+        boxShadow:
+          '0 14px 30px -12px rgb(0 0 0 / 0.45), 0 3px 8px -3px rgb(0 0 0 / 0.25)',
       }}
     >
       {/* A faint header rule, like an index card. */}
       <div className="mx-6 mt-6 border-b border-border/60" />
       <div className="flex flex-1 items-center justify-center px-7 pb-7 text-center">
-        <span className="text-[1.6rem] leading-snug font-semibold break-words">{children}</span>
+        <span className="text-[1.6rem] leading-snug font-semibold break-words">
+          {children}
+        </span>
       </div>
     </div>
   );
 }
 
-function GradeHint({ side, strength }: { side: 'left' | 'right'; strength: number }) {
+function GradeHint({
+  side,
+  strength,
+}: {
+  side: 'left' | 'right';
+  strength: number;
+}) {
   const right = side === 'right';
   return (
     <span
@@ -134,15 +166,23 @@ function GradeHint({ side, strength }: { side: 'left' | 'right'; strength: numbe
   );
 }
 
-function FlashcardRuntime({ quest, state, onComplete }: QuestRuntimeProps<FlashcardSideQuest>) {
+function FlashcardRuntime({
+  quest,
+  state,
+  onComplete,
+}: QuestRuntimeProps<FlashcardSideQuest>) {
   const { cards, cardsPerPass, order, requiredCorrect } = quest.config;
-  const completions = state.history.filter((h) => h.questId === quest.id).length;
+  const completions = state.history.filter(
+    (h) => h.questId === quest.id,
+  ).length;
   const selected = useMemo(
     () => pickCards(cards, cardsPerPass, order, completions),
-    [cards, cardsPerPass, order, completions]
+    [cards, cardsPerPass, order, completions],
   );
   const numCards = selected.length;
-  const required = requiredCorrect ? Math.max(1, Math.min(requiredCorrect, numCards)) : null;
+  const required = requiredCorrect
+    ? Math.max(1, Math.min(requiredCorrect, numCards))
+    : null;
   const reduceMotion = useMemo(prefersReducedMotion, []);
 
   const [round, dispatch] = useReducer(reduceRound, selected, initRound);
@@ -157,7 +197,10 @@ function FlashcardRuntime({ quest, state, onComplete }: QuestRuntimeProps<Flashc
   const current = round.pending[0];
   const busy = leaving !== null;
 
-  useEffect(() => () => window.clearTimeout(throwTimer.current ?? undefined), []);
+  useEffect(
+    () => () => window.clearTimeout(throwTimer.current ?? undefined),
+    [],
+  );
 
   const finish = useCallback(() => {
     onComplete({
@@ -187,7 +230,7 @@ function FlashcardRuntime({ quest, state, onComplete }: QuestRuntimeProps<Flashc
       if (reduceMotion) commit();
       else throwTimer.current = window.setTimeout(commit, THROW_MS);
     },
-    [busy, flipped, round.finished, reduceMotion, required]
+    [busy, flipped, round.finished, reduceMotion, required],
   );
 
   useEffect(() => {
@@ -234,13 +277,16 @@ function FlashcardRuntime({ quest, state, onComplete }: QuestRuntimeProps<Flashc
     if (pointerStart.current === null) return;
     pointerStart.current = null;
     setDragging(false);
-    if (Math.abs(drag) > SWIPE_THRESHOLD) grade(drag > 0 ? 'correct' : 'missed');
+    if (Math.abs(drag) > SWIPE_THRESHOLD)
+      grade(drag > 0 ? 'correct' : 'missed');
     else setDrag(0);
   }
 
   if (numCards === 0) return <EmptyDeckNotice />;
 
-  const ease = reduceMotion ? 'none' : 'transform .3s ease-out, opacity .3s ease-out';
+  const ease = reduceMotion
+    ? 'none'
+    : 'transform .3s ease-out, opacity .3s ease-out';
   const behind = round.pending.slice(1, 3);
 
   return (
@@ -250,7 +296,8 @@ function FlashcardRuntime({ quest, state, onComplete }: QuestRuntimeProps<Flashc
           <p className="text-[13px] text-muted-foreground">
             {required != null ? (
               <>
-                <strong className="text-mint">{round.correct}</strong> / {required} correct
+                <strong className="text-mint">{round.correct}</strong> /{' '}
+                {required} correct
               </>
             ) : (
               <>
@@ -273,7 +320,10 @@ function FlashcardRuntime({ quest, state, onComplete }: QuestRuntimeProps<Flashc
           />
         ) : (
           <>
-            <div className="relative h-64 w-full select-none" style={{ perspective: '1400px' }}>
+            <div
+              className="relative h-64 w-full select-none"
+              style={{ perspective: '1400px' }}
+            >
               {behind
                 .map((c, i) => ({ c, depth: i + 1 }))
                 .reverse()
@@ -319,7 +369,9 @@ function FlashcardRuntime({ quest, state, onComplete }: QuestRuntimeProps<Flashc
                     style={{
                       transformStyle: 'preserve-3d',
                       transform: `rotateY(${flipped ? 180 : 0}deg)`,
-                      transition: reduceMotion ? 'none' : 'transform .55s cubic-bezier(0.2, 0.7, 0.2, 1)',
+                      transition: reduceMotion
+                        ? 'none'
+                        : 'transform .55s cubic-bezier(0.2, 0.7, 0.2, 1)',
                     }}
                   >
                     <CardFace>{current.front}</CardFace>
@@ -332,13 +384,22 @@ function FlashcardRuntime({ quest, state, onComplete }: QuestRuntimeProps<Flashc
                       className={`pointer-events-none absolute inset-0 rounded-xl ${
                         drag > 0 ? 'bg-mint' : 'bg-destructive'
                       }`}
-                      style={{ opacity: Math.min(Math.abs(drag) / SWIPE_THRESHOLD, 1) * 0.22 }}
+                      style={{
+                        opacity:
+                          Math.min(Math.abs(drag) / SWIPE_THRESHOLD, 1) * 0.22,
+                      }}
                     />
                   )}
                   {flipped && (
                     <>
-                      <GradeHint side="right" strength={drag / SWIPE_THRESHOLD} />
-                      <GradeHint side="left" strength={-drag / SWIPE_THRESHOLD} />
+                      <GradeHint
+                        side="right"
+                        strength={drag / SWIPE_THRESHOLD}
+                      />
+                      <GradeHint
+                        side="left"
+                        strength={-drag / SWIPE_THRESHOLD}
+                      />
                     </>
                   )}
                 </div>
@@ -370,7 +431,9 @@ function FlashcardRuntime({ quest, state, onComplete }: QuestRuntimeProps<Flashc
               </Button>
             )}
             <p className="text-[13px] text-muted-foreground">
-              {flipped ? 'Swipe, or use ← / → to grade' : 'Tap the card or press space to flip'}
+              {flipped
+                ? 'Swipe, or use ← / → to grade'
+                : 'Tap the card or press space to flip'}
             </p>
           </>
         )}
@@ -400,7 +463,9 @@ function Results({
         <p className="text-5xl font-bold tabular-nums">
           <span className="text-mint">{correct}</span> / {total}
         </p>
-        <p className="mt-1 text-muted-foreground">{cleared ? 'Quest cleared' : 'Deck reviewed'}</p>
+        <p className="mt-1 text-muted-foreground">
+          {cleared ? 'Quest cleared' : 'Deck reviewed'}
+        </p>
       </div>
       {missed.length > 0 && (
         <div className="w-full rounded-lg border border-border p-3 text-left">
@@ -415,7 +480,9 @@ function Results({
               </li>
             ))}
             {missed.length > 8 && (
-              <li className="text-[13px] text-muted-foreground">+{missed.length - 8} more</li>
+              <li className="text-[13px] text-muted-foreground">
+                +{missed.length - 8} more
+              </li>
             )}
           </ul>
         </div>
@@ -442,7 +509,9 @@ function FlashcardEditor({
   }
 
   function setCard(i: number, patch: Partial<FlashcardItem>) {
-    setConfig({ cards: cards.map((c, j) => (j === i ? { ...c, ...patch } : c)) });
+    setConfig({
+      cards: cards.map((c, j) => (j === i ? { ...c, ...patch } : c)),
+    });
   }
 
   function runImport() {
@@ -464,7 +533,9 @@ function FlashcardEditor({
               setConfig({
                 cardsPerPass: v,
                 requiredCorrect:
-                  requiredCorrect != null ? Math.min(requiredCorrect, v) : undefined,
+                  requiredCorrect != null
+                    ? Math.min(requiredCorrect, v)
+                    : undefined,
               })
             }
           />
@@ -489,7 +560,9 @@ function FlashcardEditor({
         <Checkbox
           checked={requiredCorrect != null}
           onCheckedChange={(c) =>
-            setConfig({ requiredCorrect: c === true ? cardsPerPass : undefined })
+            setConfig({
+              requiredCorrect: c === true ? cardsPerPass : undefined,
+            })
           }
         />
         Require
@@ -497,7 +570,9 @@ function FlashcardEditor({
           value={requiredCorrect ?? cardsPerPass}
           max={cardsPerPass}
           disabled={requiredCorrect == null}
-          onChange={(v) => setConfig({ requiredCorrect: Math.min(v, cardsPerPass) })}
+          onChange={(v) =>
+            setConfig({ requiredCorrect: Math.min(v, cardsPerPass) })
+          }
         />
         of {cardsPerPass} correct to pass
       </Label>
@@ -511,7 +586,8 @@ function FlashcardEditor({
         </span>
         {cards.length > SOFT_CARD_LIMIT && (
           <span className="text-[13px] text-destructive">
-            Large decks may approach the browser's local storage limit. Consider splitting this up.
+            Large decks may approach the browser's local storage limit. Consider
+            splitting this up.
           </span>
         )}
         {cards.map((c, i) => (
@@ -532,7 +608,9 @@ function FlashcardEditor({
               variant="destructive"
               size="icon"
               title="Remove card"
-              onClick={() => setConfig({ cards: cards.filter((_, j) => j !== i) })}
+              onClick={() =>
+                setConfig({ cards: cards.filter((_, j) => j !== i) })
+              }
             >
               ✕
             </Button>
@@ -542,7 +620,12 @@ function FlashcardEditor({
           variant="outline"
           className="self-start"
           onClick={() =>
-            setConfig({ cards: [...cards, { id: crypto.randomUUID(), front: '', back: '' }] })
+            setConfig({
+              cards: [
+                ...cards,
+                { id: crypto.randomUUID(), front: '', back: '' },
+              ],
+            })
           }
         >
           + Add card

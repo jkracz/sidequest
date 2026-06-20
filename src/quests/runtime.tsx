@@ -13,7 +13,9 @@ function numberParam(name: string): number | undefined {
   return Number.isFinite(value) && value >= 0 ? value : undefined;
 }
 
-export function updateUrlParams(updates: Record<string, string | number | null>): void {
+export function updateUrlParams(
+  updates: Record<string, string | number | null>,
+): void {
   const url = new URL(window.location.href);
   for (const [key, value] of Object.entries(updates)) {
     if (value === null) url.searchParams.delete(key);

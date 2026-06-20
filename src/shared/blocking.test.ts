@@ -50,7 +50,9 @@ function state(overrides: Partial<AppState> = {}): AppState {
 
 describe('decideBlock', () => {
   it('blocks matching sites during an active scheduled block', () => {
-    expect(decideBlock(state(), 'https://mobile.twitter.com/home', at(8, 10))).toEqual({
+    expect(
+      decideBlock(state(), 'https://mobile.twitter.com/home', at(8, 10)),
+    ).toEqual({
       blocked: true,
       questIds: ['reflection'],
       allowAnyQuest: false,
@@ -58,12 +60,18 @@ describe('decideBlock', () => {
   });
 
   it('does not block outside the active schedule or for non-matching sites', () => {
-    expect(decideBlock(state(), 'https://twitter.com/home', at(8, 18)).blocked).toBe(false);
-    expect(decideBlock(state(), 'https://example.com', at(8, 10)).blocked).toBe(false);
+    expect(
+      decideBlock(state(), 'https://twitter.com/home', at(8, 18)).blocked,
+    ).toBe(false);
+    expect(decideBlock(state(), 'https://example.com', at(8, 10)).blocked).toBe(
+      false,
+    );
   });
 
   it('does not block invalid or unsupported URLs', () => {
-    expect(decideBlock(state(), 'chrome://extensions', at(8, 10)).blocked).toBe(false);
+    expect(decideBlock(state(), 'chrome://extensions', at(8, 10)).blocked).toBe(
+      false,
+    );
     expect(decideBlock(state(), 'not a url', at(8, 10)).blocked).toBe(false);
   });
 
@@ -80,7 +88,9 @@ describe('decideBlock', () => {
       ],
     });
 
-    expect(decideBlock(s, 'https://mobile.twitter.com/home', now).blocked).toBe(false);
+    expect(decideBlock(s, 'https://mobile.twitter.com/home', now).blocked).toBe(
+      false,
+    );
   });
 
   it('ignores expired passes', () => {
@@ -144,10 +154,9 @@ describe('decideBlock', () => {
       ],
     });
 
-    expect(decideBlock(s, 'https://twitter.com/home', at(8, 10)).questIds).toEqual([
-      'reflection',
-      'timer',
-    ]);
+    expect(
+      decideBlock(s, 'https://twitter.com/home', at(8, 10)).questIds,
+    ).toEqual(['reflection', 'timer']);
   });
 });
 
@@ -155,9 +164,9 @@ describe('eligibleQuests', () => {
   it('returns all quests when the decision came from an ad hoc session', () => {
     const s = state();
 
-    expect(eligibleQuests(s, { blocked: true, questIds: [], allowAnyQuest: true })).toEqual(
-      s.quests
-    );
+    expect(
+      eligibleQuests(s, { blocked: true, questIds: [], allowAnyQuest: true }),
+    ).toEqual(s.quests);
   });
 
   it('returns only named quests and drops unknown ids', () => {
@@ -168,7 +177,7 @@ describe('eligibleQuests', () => {
         blocked: true,
         questIds: ['timer', 'missing'],
         allowAnyQuest: false,
-      })
+      }),
     ).toEqual([s.quests[1]]);
   });
 });

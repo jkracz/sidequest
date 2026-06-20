@@ -17,10 +17,12 @@ const KIND_UI: Record<QuestType, QuestKindUi> = {
 /** Pure data + UI for every quest kind, keyed by type. The single source the
  *  blocked page, options page, and quest log all look kinds up through. */
 export const QUEST_KINDS = Object.fromEntries(
-  QUEST_TYPES.map((type) => [type, { ...KIND_DATA[type], ...KIND_UI[type] }])
+  QUEST_TYPES.map((type) => [type, { ...KIND_DATA[type], ...KIND_UI[type] }]),
 ) as Record<QuestType, QuestKind>;
 
-export const ALL_KINDS: QuestKind[] = QUEST_TYPES.map((type) => QUEST_KINDS[type]);
+export const ALL_KINDS: QuestKind[] = QUEST_TYPES.map(
+  (type) => QUEST_KINDS[type],
+);
 
 export const kindOf = (quest: SideQuest): QuestKind => QUEST_KINDS[quest.type];
 

@@ -7,7 +7,13 @@ import { QuestsSection } from './sections/QuestsSection';
 import { ScheduleSection } from './sections/ScheduleSection';
 import { SettingsSection } from './sections/SettingsSection';
 
-const TABS = ['Block Lists', 'Schedule', 'Quests', 'Quest Log', 'Settings'] as const;
+const TABS = [
+  'Block Lists',
+  'Schedule',
+  'Quests',
+  'Quest Log',
+  'Settings',
+] as const;
 type OptionsTab = (typeof TABS)[number];
 
 const TAB_SLUGS: Record<OptionsTab, string> = {

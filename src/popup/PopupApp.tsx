@@ -17,14 +17,18 @@ const SITE_CHIP_LIMIT = 6;
 function sitesForLists(state: AppState, blockListIds: string[]): string[] {
   return [
     ...new Set(
-      blockListIds.flatMap((id) => state.blockLists.find((bl) => bl.id === id)?.sites ?? [])
+      blockListIds.flatMap(
+        (id) => state.blockLists.find((bl) => bl.id === id)?.sites ?? [],
+      ),
     ),
   ];
 }
 
 function SiteChips({ sites }: { sites: string[] }) {
   if (sites.length === 0)
-    return <span className="text-xs text-muted-foreground">no sites in list</span>;
+    return (
+      <span className="text-xs text-muted-foreground">no sites in list</span>
+    );
   const shown = sites.slice(0, SITE_CHIP_LIMIT);
   const rest = sites.slice(SITE_CHIP_LIMIT);
   return (
@@ -35,7 +39,11 @@ function SiteChips({ sites }: { sites: string[] }) {
         </Badge>
       ))}
       {rest.length > 0 && (
-        <Badge variant="secondary" className="text-muted-foreground" title={rest.join(', ')}>
+        <Badge
+          variant="secondary"
+          className="text-muted-foreground"
+          title={rest.join(', ')}
+        >
           +{rest.length} more
         </Badge>
       )}
@@ -59,7 +67,9 @@ function formatClockTime(at: number): string {
   const m = d.getMinutes();
   const suffix = h < 12 ? 'am' : 'pm';
   const hour12 = h % 12 === 0 ? 12 : h % 12;
-  return m === 0 ? `${hour12}${suffix}` : `${hour12}:${String(m).padStart(2, '0')}${suffix}`;
+  return m === 0
+    ? `${hour12}${suffix}`
+    : `${hour12}:${String(m).padStart(2, '0')}${suffix}`;
 }
 
 function CountdownTimer({
@@ -123,7 +133,7 @@ export function PopupApp() {
   const now = new Date(nowMs);
   const blocks = activeTimeBlocks(state.timeBlocks, now);
   const blockEndsAt = new Map(
-    blocks.map((tb) => [tb.id, activeTimeBlockEndsAt(tb, now) ?? nowMs])
+    blocks.map((tb) => [tb.id, activeTimeBlockEndsAt(tb, now) ?? nowMs]),
   );
   const sessions = activeAdHocSessions(state, now);
   const livePasses = state.passes.filter((p) => p.expiresAt > nowMs);
@@ -173,7 +183,10 @@ export function PopupApp() {
             <div key={tb.id} className="flex flex-col gap-1.5">
               <div className="flex items-baseline justify-between gap-2">
                 <strong>{tb.label}</strong>
-                <CountdownTimer until={blockEndsAt.get(tb.id) ?? nowMs} now={nowMs} />
+                <CountdownTimer
+                  until={blockEndsAt.get(tb.id) ?? nowMs}
+                  now={nowMs}
+                />
               </div>
               <SiteChips sites={sitesForLists(state, tb.blockListIds)} />
             </div>
@@ -182,7 +195,10 @@ export function PopupApp() {
             <div key={s.id} className="flex flex-col gap-1.5">
               <div className="flex items-center justify-between gap-2">
                 <strong className="flex items-center gap-1.5">
-                  <Lock aria-hidden="true" className="size-3.5 text-muted-foreground" />
+                  <Lock
+                    aria-hidden="true"
+                    className="size-3.5 text-muted-foreground"
+                  />
                   Ad hoc session
                 </strong>
                 <CountdownTimer until={s.endsAt} now={nowMs} />
@@ -269,7 +285,11 @@ export function PopupApp() {
                   <Ticket aria-hidden="true" className="size-3.5 text-mint" />
                   {p.hostname}
                 </span>
-                <CountdownTimer variant="pass" until={p.expiresAt} now={nowMs} />
+                <CountdownTimer
+                  variant="pass"
+                  until={p.expiresAt}
+                  now={nowMs}
+                />
               </div>
             ))}
           </div>

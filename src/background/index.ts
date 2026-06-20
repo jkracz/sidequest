@@ -1,6 +1,14 @@
 import { activeAdHocSessions, decideBlock } from '../shared/blocking';
-import { activeTimeBlockEndsAt, activeTimeBlocks, nextBlockStart } from '../shared/schedule';
-import { getState, persistMigrationIfNeeded, setState } from '../shared/storage';
+import {
+  activeTimeBlockEndsAt,
+  activeTimeBlocks,
+  nextBlockStart,
+} from '../shared/schedule';
+import {
+  getState,
+  persistMigrationIfNeeded,
+  setState,
+} from '../shared/storage';
 import type { AppState } from '../shared/types';
 
 const WAKE_ALARM = 'sidequest-wake';
@@ -20,10 +28,16 @@ const OFF_ICON_PATH = {
 void persistMigrationIfNeeded();
 
 function blockedPageUrl(target: string): string {
-  return chrome.runtime.getURL(`src/blocked/index.html?target=${encodeURIComponent(target)}`);
+  return chrome.runtime.getURL(
+    `src/blocked/index.html?target=${encodeURIComponent(target)}`,
+  );
 }
 
-async function redirectIfBlocked(tabId: number, url: string, state?: AppState): Promise<void> {
+async function redirectIfBlocked(
+  tabId: number,
+  url: string,
+  state?: AppState,
+): Promise<void> {
   const s = state ?? (await getState());
   if (decideBlock(s, url, new Date()).blocked) {
     try {
@@ -40,7 +54,7 @@ async function sweepTabs(): Promise<void> {
   await Promise.all(
     tabs
       .filter((tab) => tab.id !== undefined && tab.url)
-      .map((tab) => redirectIfBlocked(tab.id!, tab.url!, state))
+      .map((tab) => redirectIfBlocked(tab.id!, tab.url!, state)),
   );
 }
 
@@ -61,8 +75,11 @@ async function updateActionIcon(state?: AppState): Promise<void> {
   const s = state ?? (await getState());
   const now = new Date();
   const hasRunningBlock =
-    activeTimeBlocks(s.timeBlocks, now).length > 0 || activeAdHocSessions(s, now).length > 0;
-  await chrome.action.setIcon({ path: hasRunningBlock ? ON_ICON_PATH : OFF_ICON_PATH });
+    activeTimeBlocks(s.timeBlocks, now).length > 0 ||
+    activeAdHocSessions(s, now).length > 0;
+  await chrome.action.setIcon({
+    path: hasRunningBlock ? ON_ICON_PATH : OFF_ICON_PATH,
+  });
 }
 
 /**
@@ -117,7 +134,12 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 // should be enforced and when the next wake is due.
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== 'local') return;
-  if (changes.blockLists || changes.timeBlocks || changes.passes || changes.adHocSessions) {
+  if (
+    changes.blockLists ||
+    changes.timeBlocks ||
+    changes.passes ||
+    changes.adHocSessions
+  ) {
     void updateActionIcon();
     void sweepTabs();
     void scheduleWake();

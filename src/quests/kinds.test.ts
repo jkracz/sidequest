@@ -6,13 +6,19 @@ import type { SideQuest } from '../shared/types';
 describe('defaultQuests', () => {
   it('creates one instance of every kind with stable ids', () => {
     const quests = defaultQuests();
-    expect([...quests.map((q) => q.type)].sort()).toEqual([...QUEST_TYPES].sort());
-    expect(quests.find((q) => q.type === 'flashcards')?.id).toBe('quest-flashcards-default');
+    expect([...quests.map((q) => q.type)].sort()).toEqual(
+      [...QUEST_TYPES].sort(),
+    );
+    expect(quests.find((q) => q.type === 'flashcards')?.id).toBe(
+      'quest-flashcards-default',
+    );
   });
 
   it('ships a non-empty starter deck so flashcards can run on first use', () => {
     const flashcards = defaultQuests().find((q) => q.type === 'flashcards');
-    expect(flashcards?.type === 'flashcards' && flashcards.config.cards.length).toBeGreaterThan(0);
+    expect(
+      flashcards?.type === 'flashcards' && flashcards.config.cards.length,
+    ).toBeGreaterThan(0);
   });
 });
 
