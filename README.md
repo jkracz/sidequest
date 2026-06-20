@@ -7,7 +7,7 @@ Earn your distractions. A Chrome extension that blocks sites on a schedule — a
 - **Block lists** — named groups of sites (matched by hostname, subdomains included).
 - **Time blocks** — days + a time range during which one or more block lists are enforced. Ranges that end at or before they start span midnight.
 - **Ad hoc sessions** — when no block is already active, start a block on any list right from the popup for a chosen duration. No ending it early; the only way through is a quest.
-- **Side quests** — challenges that earn a temporary pass (minutes configured per quest). Three types so far: a reflection prompt pool served in rotation, a countdown timer, and an honor-system push-up counter.
+- **Side quests** — challenges that earn a temporary pass (minutes configured per quest). Four types so far: a reflection prompt pool served in rotation, a countdown timer, a configurable honor-system counter, and flashcards.
 - **Quest log** — a day-grouped feed of completed quests plus dashboard stats: quests completed, temptations resisted, estimated time saved, and your activity streak.
 - When a time block starts or a pass expires, already-open offending tabs are swept to the quest page too. No loopholes.
 

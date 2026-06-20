@@ -21,7 +21,7 @@ export interface TimeBlock {
   questIds: string[];
 }
 
-export type QuestType = 'reflection' | 'timer' | 'pushups';
+export type QuestType = 'reflection' | 'timer' | 'counter' | 'flashcards';
 
 export interface ReflectionConfig {
   /** Served in rotation: each completion advances to the next prompt. */
@@ -34,9 +34,32 @@ export interface TimerConfig {
   seconds: number;
 }
 
-export interface PushupConfig {
-  /** Reps to count off before the user may continue. */
-  reps: number;
+export interface CounterConfig {
+  /** Items to count off before the user may continue. */
+  target: number;
+  /** Singular unit name, e.g. "push-up". Pluralized automatically for display. */
+  unit: string;
+  prompt: string;
+}
+
+export interface FlashcardItem {
+  id: string;
+  front: string;
+  back: string;
+}
+
+export interface FlashcardConfig {
+  cards: FlashcardItem[];
+  /** How many cards to step through before the pass is earned. */
+  cardsPerPass: number;
+  /** 'random' samples each visit; 'sequential' advances through the deck across visits. */
+  order: 'random' | 'sequential';
+  /**
+   * Cards you must grade correct to earn the pass. Omitted = review only:
+   * stepping through the set is enough. When set, missed cards come back until
+   * you clear this many.
+   */
+  requiredCorrect?: number;
 }
 
 interface SideQuestBase {
@@ -56,18 +79,34 @@ export interface TimerSideQuest extends SideQuestBase {
   config: TimerConfig;
 }
 
-export interface PushupSideQuest extends SideQuestBase {
-  type: 'pushups';
-  config: PushupConfig;
+export interface CounterSideQuest extends SideQuestBase {
+  type: 'counter';
+  config: CounterConfig;
 }
 
-export type SideQuest = ReflectionSideQuest | TimerSideQuest | PushupSideQuest;
+export interface FlashcardSideQuest extends SideQuestBase {
+  type: 'flashcards';
+  config: FlashcardConfig;
+}
+
+export type SideQuest =
+  | ReflectionSideQuest
+  | TimerSideQuest
+  | CounterSideQuest
+  | FlashcardSideQuest;
 
 /** The type-specific outcome of a completed quest. */
 export type QuestResult =
   | { questType: 'reflection'; text: string; prompt?: string }
   | { questType: 'timer'; seconds: number }
-  | { questType: 'pushups'; reps: number };
+  | { questType: 'counter'; count: number; unit: string }
+  // `correct` and `cards` are absent on entries logged before grading existed.
+  | {
+      questType: 'flashcards';
+      reviewed: number;
+      correct?: number;
+      cards?: { front: string; back: string; missed: boolean }[];
+    };
 
 /** A user-initiated block running from now until endsAt, regardless of schedule. */
 export interface AdHocSession {

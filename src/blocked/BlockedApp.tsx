@@ -3,13 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dices, Settings2 } from 'lucide-react';
 import { QuestTypeIcon } from '../components/QuestTypeIcon';
+import { QuestRunner, resetQuestProgress, updateUrlParams } from '../quests/runtime';
 import { decideBlock, eligibleQuests } from '../shared/blocking';
 import { hostnameOf } from '../shared/match';
 import { getState, setState } from '../shared/storage';
-import type { AppState, QuestResult, ReflectionSideQuest, SideQuest } from '../shared/types';
-import { PushupQuest } from './quests/PushupQuest';
-import { ReflectionQuest } from './quests/ReflectionQuest';
-import { TimerQuest } from './quests/TimerQuest';
+import type { AppState, QuestResult, SideQuest } from '../shared/types';
 
 /** Reloading the block page while dithering shouldn't stack up resists. */
 const RESIST_DEDUPE_MS = 60_000;
@@ -25,57 +23,6 @@ function targetFromUrl(): string | null {
 
 function stringParam(name: string): string | null {
   return new URLSearchParams(window.location.search).get(name);
-}
-
-function numberParam(name: string): number | undefined {
-  const raw = stringParam(name);
-  if (!raw) return undefined;
-  const value = Number(raw);
-  return Number.isFinite(value) && value >= 0 ? value : undefined;
-}
-
-function updateUrlParams(updates: Record<string, string | number | null>): void {
-  const url = new URL(window.location.href);
-  for (const [key, value] of Object.entries(updates)) {
-    if (value === null) {
-      url.searchParams.delete(key);
-    } else {
-      url.searchParams.set(key, String(value));
-    }
-  }
-  window.history.replaceState(null, '', `${url.pathname}${url.search}`);
-}
-
-function draftKey(target: string, questId: string, prompt: string): string {
-  return `sidequest:reflection-draft:${questId}:${target}:${prompt}`;
-}
-
-function getDraft(key: string): string {
-  try {
-    return window.sessionStorage.getItem(key) ?? '';
-  } catch {
-    return '';
-  }
-}
-
-function setDraft(key: string, text: string): void {
-  try {
-    if (text) {
-      window.sessionStorage.setItem(key, text);
-    } else {
-      window.sessionStorage.removeItem(key);
-    }
-  } catch {
-    // Draft persistence is best-effort; the quest should still work without it.
-  }
-}
-
-/** Each completion of this quest advances the rotation to the next prompt. */
-function promptFor(quest: ReflectionSideQuest, state: AppState): string {
-  const prompts = quest.config.prompts;
-  if (prompts.length === 0) return 'What are you avoiding by going to this page?';
-  const completed = state.history.filter((h) => h.questId === quest.id).length;
-  return prompts[completed % prompts.length];
 }
 
 /**
@@ -137,12 +84,14 @@ export function BlockedApp() {
 
   function chooseQuest(id: string) {
     setChosenQuestId(id);
-    updateUrlParams({ quest: id, startedAt: null, count: null });
+    updateUrlParams({ quest: id });
+    resetQuestProgress();
   }
 
   function clearQuest() {
     setChosenQuestId(null);
-    updateUrlParams({ quest: null, startedAt: null, count: null });
+    updateUrlParams({ quest: null });
+    resetQuestProgress();
   }
 
   async function completeQuest(quest: SideQuest, result: QuestResult) {
@@ -200,42 +149,12 @@ export function BlockedApp() {
 
       {quest && (
         <>
-          {quest.type === 'reflection' &&
-            (() => {
-              const prompt = promptFor(quest, state);
-              const key = draftKey(target, quest.id, prompt);
-              return (
-                <ReflectionQuest
-                  key={key}
-                  quest={quest}
-                  prompt={prompt}
-                  initialText={getDraft(key)}
-                  onTextChange={(text) => setDraft(key, text)}
-                  onComplete={(result) => {
-                    setDraft(key, '');
-                    void completeQuest(quest, result);
-                  }}
-                />
-              );
-            })()}
-          {quest.type === 'timer' && (
-            <TimerQuest
-              key={quest.id}
-              quest={quest}
-              startedAt={numberParam('startedAt')}
-              onStartedAtChange={(startedAt) => updateUrlParams({ startedAt })}
-              onComplete={(result) => void completeQuest(quest, result)}
-            />
-          )}
-          {quest.type === 'pushups' && (
-            <PushupQuest
-              key={quest.id}
-              quest={quest}
-              initialCount={numberParam('count')}
-              onCountChange={(count) => updateUrlParams({ count })}
-              onComplete={(result) => void completeQuest(quest, result)}
-            />
-          )}
+          <QuestRunner
+            quest={quest}
+            state={state}
+            target={target}
+            onComplete={(result) => void completeQuest(quest, result)}
+          />
           {quests.length > 1 && (
             <Button
               variant="ghost"

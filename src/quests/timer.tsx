@@ -1,27 +1,24 @@
 import { useEffect, useState } from 'react';
+import { Hourglass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
-import { formatSeconds } from '../../shared/schedule';
-import type { QuestResult, TimerSideQuest } from '../../shared/types';
+import { NumberInput } from './fields';
+import { formatSeconds } from '../shared/schedule';
+import type { QuestKindUi, QuestRuntimeProps } from './types';
+import type { QuestResult, SideQuest, TimerSideQuest } from '../shared/types';
 
-interface Props {
-  quest: TimerSideQuest;
-  startedAt?: number;
-  onStartedAtChange?: (startedAt: number) => void;
-  onComplete: (result: QuestResult) => void;
-}
-
-export function TimerQuest({ quest, startedAt: initialStartedAt, onStartedAtChange, onComplete }: Props) {
+function TimerRuntime({ quest, ctx, onComplete }: QuestRuntimeProps<TimerSideQuest>) {
   const total = Math.max(1, quest.config.seconds);
-  const [startedAt] = useState(() => initialStartedAt ?? Date.now());
+  const [startedAt] = useState(() => ctx.num('startedAt') ?? Date.now());
   const [remaining, setRemaining] = useState(() =>
     Math.max(0, Math.ceil((startedAt + total * 1000 - Date.now()) / 1000))
   );
 
   useEffect(() => {
-    if (initialStartedAt === undefined) onStartedAtChange?.(startedAt);
-  }, [initialStartedAt, onStartedAtChange, startedAt]);
+    if (ctx.num('startedAt') === undefined) ctx.setNum('startedAt', startedAt);
+  }, [ctx, startedAt]);
 
   // Count against the wall clock rather than accumulating interval ticks, so
   // background-tab throttling can't stretch the wait.
@@ -58,3 +55,36 @@ export function TimerQuest({ quest, startedAt: initialStartedAt, onStartedAtChan
     </Card>
   );
 }
+
+function TimerEditor({
+  quest,
+  onChange,
+}: {
+  quest: TimerSideQuest;
+  onChange: (quest: SideQuest) => void;
+}) {
+  return (
+    <Label className="font-normal">
+      Countdown lasts
+      <NumberInput
+        value={quest.config.seconds}
+        max={3600}
+        onChange={(v) => onChange({ ...quest, config: { seconds: v } })}
+      />
+      seconds before you can continue
+    </Label>
+  );
+}
+
+function TimerLogDetail({ result }: { result: Extract<QuestResult, { questType: 'timer' }> }) {
+  return (
+    <p className="text-muted-foreground">Waited out a {formatSeconds(result.seconds)} countdown.</p>
+  );
+}
+
+export const timerUi: QuestKindUi<TimerSideQuest> = {
+  icon: Hourglass,
+  Editor: TimerEditor,
+  Runtime: TimerRuntime,
+  LogDetail: TimerLogDetail,
+};
