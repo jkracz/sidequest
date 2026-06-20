@@ -249,9 +249,6 @@ export function PopupApp() {
                 Block now
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
-              No ending it early — the only way through is a side quest.
-            </p>
           </div>
         </>
       )}

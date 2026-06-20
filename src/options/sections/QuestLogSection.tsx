@@ -1,8 +1,8 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { QuestTypeIcon } from '../../components/QuestTypeIcon';
+import { QuestLogDetail } from '../../quests/registry';
 import { activityByDay, computeMetrics, dayKey, formatMinutes } from '../../shared/metrics';
-import { formatSeconds } from '../../shared/schedule';
 import type { AppState, HistoryEntry } from '../../shared/types';
 
 function dayLabel(t: number, now: Date): string {
@@ -78,22 +78,7 @@ export function QuestLogSection({ state }: { state: AppState }) {
                     })}
                   </span>
                 </div>
-                {entry.questType === 'reflection' && (
-                  <>
-                    {entry.prompt && (
-                      <p className="text-[13px] text-muted-foreground italic">{entry.prompt}</p>
-                    )}
-                    <p className="whitespace-pre-wrap">{entry.text}</p>
-                  </>
-                )}
-                {entry.questType === 'timer' && (
-                  <p className="text-muted-foreground">
-                    Waited out a {formatSeconds(entry.seconds)} countdown.
-                  </p>
-                )}
-                {entry.questType === 'pushups' && (
-                  <p className="text-muted-foreground">Knocked out {entry.reps} push-ups.</p>
-                )}
+                <QuestLogDetail result={entry} />
                 <span className="text-[13px] text-mint">Earned {entry.minutesEarned} min</span>
               </CardContent>
             </Card>
