@@ -28,26 +28,26 @@ export function computeMetrics(state: AppState, now = Date.now()): Metrics {
 const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
 export interface SiteResistStats {
-  /** Walk-aways from this hostname within the last 30 days. */
-  month: number;
+  /** Walk-aways from this hostname within the last 30 days (rolling window). */
+  last30Days: number;
   /** Walk-aways from this hostname over all time. */
   allTime: number;
 }
 
-/** How often the user has walked away from a single site, this month and ever. */
+/** How often the user has walked away from a single site, recently and ever. */
 export function siteResistStats(
   state: AppState,
   hostname: string,
-  now = Date.now()
+  now = Date.now(),
 ): SiteResistStats {
-  let month = 0;
+  let last30Days = 0;
   let allTime = 0;
   for (const r of state.resists) {
     if (r.hostname !== hostname) continue;
     allTime++;
-    if (now - r.at <= THIRTY_DAYS_MS) month++;
+    if (now - r.at <= THIRTY_DAYS_MS) last30Days++;
   }
-  return { month, allTime };
+  return { last30Days, allTime };
 }
 
 export function dayKey(t: number): string {

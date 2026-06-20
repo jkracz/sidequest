@@ -3,7 +3,11 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Dices, Settings2, X } from 'lucide-react';
 import { QuestTypeIcon } from '../components/QuestTypeIcon';
-import { QuestRunner, resetQuestProgress, updateUrlParams } from '../quests/runtime';
+import {
+  QuestRunner,
+  resetQuestProgress,
+  updateUrlParams,
+} from '../quests/runtime';
 import { decideBlock, eligibleQuests } from '../shared/blocking';
 import { hostnameOf } from '../shared/match';
 import { siteResistStats, type SiteResistStats } from '../shared/metrics';
@@ -35,7 +39,7 @@ async function registerResist(hostname: string): Promise<void> {
   const current = await getState();
   const now = Date.now();
   const recent = current.resists.some(
-    (r) => r.hostname === hostname && now - r.at < RESIST_DEDUPE_MS
+    (r) => r.hostname === hostname && now - r.at < RESIST_DEDUPE_MS,
   );
   if (!recent) {
     await setState({ resists: [...current.resists, { hostname, at: now }] });
@@ -58,10 +62,13 @@ async function closeTab(): Promise<void> {
 
 export function BlockedApp() {
   const [state, setAppState] = useState<AppState | null>(null);
-  const [chosenQuestId, setChosenQuestId] = useState<string | null>(() => stringParam('quest'));
+  const [chosenQuestId, setChosenQuestId] = useState<string | null>(() =>
+    stringParam('quest'),
+  );
   const target = targetFromUrl();
   const hostname = target ? hostnameOf(target) : null;
-  const decision = state && target ? decideBlock(state, target, new Date()) : null;
+  const decision =
+    state && target ? decideBlock(state, target, new Date()) : null;
 
   useEffect(() => {
     void getState().then(setAppState);
@@ -95,7 +102,9 @@ export function BlockedApp() {
   const quests = eligibleQuests(state, decision!);
   const stats = siteResistStats(state, hostname);
   const quest =
-    quests.length === 1 ? quests[0] : (quests.find((q) => q.id === chosenQuestId) ?? null);
+    quests.length === 1
+      ? quests[0]
+      : (quests.find((q) => q.id === chosenQuestId) ?? null);
 
   function chooseQuest(id: string) {
     setChosenQuestId(id);
@@ -136,7 +145,7 @@ export function BlockedApp() {
         },
       ],
       resists: current.resists.filter(
-        (r) => !(r.hostname === hostname && now - r.at < RESIST_WITHDRAW_MS)
+        (r) => !(r.hostname === hostname && now - r.at < RESIST_WITHDRAW_MS),
       ),
     });
     window.location.href = target!;
@@ -210,31 +219,33 @@ function SiteBadge({ hostname }: { hostname: string }) {
 }
 
 function StreakHero({ stats }: { stats: SiteResistStats }) {
-  const { month, allTime } = stats;
+  const { last30Days, allTime } = stats;
   // mint = earned: the panel only lights up once there are walk-aways to celebrate.
-  const earned = month > 0;
+  const earned = last30Days > 0;
   return (
     <section className="mt-8 flex flex-col items-center animate-in fade-in-50 slide-in-from-bottom-3 duration-700">
       <div
         className={cn(
           'flex min-w-[15rem] flex-col items-center rounded-[2.25rem] px-12 py-9 ring-1',
-          earned ? 'bg-mint-deep ring-mint/20' : 'bg-card ring-foreground/10'
+          earned ? 'bg-mint-deep ring-mint/20' : 'bg-card ring-foreground/10',
         )}
       >
         <span
           className={cn(
             'text-[5.5rem] leading-none font-bold tracking-tighter tabular-nums',
-            earned ? 'text-mint' : 'text-foreground'
+            earned ? 'text-mint' : 'text-foreground',
           )}
         >
-          {month}
+          {last30Days}
         </span>
         <p className="mt-2 text-[15px] text-foreground/70">
-          time{month === 1 ? '' : 's'} you walked away this month
+          time{last30Days === 1 ? '' : 's'} you walked away in the last 30 days
         </p>
       </div>
       {allTime > 0 && (
-        <p className="mt-3.5 text-[13px] text-muted-foreground tabular-nums">{allTime} all-time</p>
+        <p className="mt-3.5 text-[13px] text-muted-foreground tabular-nums">
+          {allTime} all-time
+        </p>
       )}
     </section>
   );
@@ -245,10 +256,16 @@ function Rule() {
 }
 
 function openOptionsPage(): void {
-  window.location.href = chrome.runtime.getURL('src/options/index.html?tab=schedule');
+  window.location.href = chrome.runtime.getURL(
+    'src/options/index.html?tab=schedule',
+  );
 }
 
-function NoBypassNote({ hasConfiguredQuests }: { hasConfiguredQuests: boolean }) {
+function NoBypassNote({
+  hasConfiguredQuests,
+}: {
+  hasConfiguredQuests: boolean;
+}) {
   return (
     <div className="mt-12 flex w-full max-w-sm flex-col items-center gap-5 animate-in fade-in-50 duration-700">
       <Rule />
@@ -295,7 +312,9 @@ function QuestPicker({
       <Button
         variant="ghost"
         className="mt-1 self-center text-muted-foreground hover:text-foreground"
-        onClick={() => onChoose(quests[Math.floor(Math.random() * quests.length)].id)}
+        onClick={() =>
+          onChoose(quests[Math.floor(Math.random() * quests.length)].id)
+        }
       >
         <Dices aria-hidden="true" />
         Surprise me
