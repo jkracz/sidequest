@@ -12,7 +12,9 @@ import type { AppState, QuestType, SideQuest } from '../../shared/types';
 
 export function QuestsSection({ state }: { state: AppState }) {
   async function updateQuest(updated: SideQuest) {
-    await setState({ quests: state.quests.map((q) => (q.id === updated.id ? updated : q)) });
+    await setState({
+      quests: state.quests.map((q) => (q.id === updated.id ? updated : q)),
+    });
   }
 
   async function addQuest(type: QuestType) {
@@ -32,7 +34,7 @@ export function QuestsSection({ state }: { state: AppState }) {
   async function deleteQuest(quest: SideQuest) {
     if (
       !window.confirm(
-        `Delete "${quest.name}"? Any schedule using it will lose this quest as a bypass.`
+        `Delete "${quest.name}"? Any schedule using it will lose this quest as a bypass.`,
       )
     ) {
       return;
@@ -54,12 +56,17 @@ export function QuestsSection({ state }: { state: AppState }) {
         return (
           <Card key={quest.id} className="w-full">
             <CardHeader className="flex flex-row items-center gap-2">
-              <QuestTypeIcon type={quest.type} className="text-muted-foreground" />
+              <QuestTypeIcon
+                type={quest.type}
+                className="text-muted-foreground"
+              />
               <Input
                 className="h-9 flex-1 font-medium"
                 value={quest.name}
                 aria-label="Quest name"
-                onChange={(e) => void updateQuest({ ...quest, name: e.target.value })}
+                onChange={(e) =>
+                  void updateQuest({ ...quest, name: e.target.value })
+                }
               />
               <Button
                 variant="ghost"
@@ -89,7 +96,9 @@ export function QuestsSection({ state }: { state: AppState }) {
                 <NumberInput
                   value={quest.passDurationMinutes}
                   max={120}
-                  onChange={(v) => void updateQuest({ ...quest, passDurationMinutes: v })}
+                  onChange={(v) =>
+                    void updateQuest({ ...quest, passDurationMinutes: v })
+                  }
                 />
                 minutes on the blocked site
               </Label>
@@ -108,7 +117,10 @@ export function QuestsSection({ state }: { state: AppState }) {
               size="sm"
               onClick={() => void addQuest(kind.type)}
             >
-              <QuestTypeIcon type={kind.type} className="text-muted-foreground" />
+              <QuestTypeIcon
+                type={kind.type}
+                className="text-muted-foreground"
+              />
               {kind.label}
             </Button>
           ))}

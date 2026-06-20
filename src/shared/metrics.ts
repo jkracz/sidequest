@@ -12,7 +12,10 @@ export interface Metrics {
 export function computeMetrics(state: AppState, now = Date.now()): Metrics {
   const { history, resists, settings } = state;
 
-  const activityTimestamps = [...history.map((h) => h.createdAt), ...resists.map((r) => r.at)];
+  const activityTimestamps = [
+    ...history.map((h) => h.createdAt),
+    ...resists.map((r) => r.at),
+  ];
 
   return {
     questsCompleted: history.length,
@@ -30,7 +33,10 @@ export function dayKey(t: number): string {
 /** Logged events (quests + resists) per local day, keyed by dayKey. */
 export function activityByDay(state: AppState): Map<string, number> {
   const counts = new Map<string, number>();
-  for (const t of [...state.history.map((h) => h.createdAt), ...state.resists.map((r) => r.at)]) {
+  for (const t of [
+    ...state.history.map((h) => h.createdAt),
+    ...state.resists.map((r) => r.at),
+  ]) {
     const key = dayKey(t);
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }

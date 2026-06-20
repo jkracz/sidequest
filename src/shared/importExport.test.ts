@@ -13,7 +13,9 @@ import type { AppState, HistoryEntry, ResistedVisit, SideQuest } from './types';
 
 const NOW = new Date('2026-06-20T12:00:00.000Z');
 
-function timerQuest(overrides: Partial<Extract<SideQuest, { type: 'timer' }>> = {}): SideQuest {
+function timerQuest(
+  overrides: Partial<Extract<SideQuest, { type: 'timer' }>> = {},
+): SideQuest {
   return {
     id: 'timer-1',
     type: 'timer',
@@ -75,7 +77,7 @@ describe('SideQuest JSON exports', () => {
   it('roundtrips a quest log export with history and resisted visits', () => {
     const exported = createQuestLogExport(
       state({ history: [reflectionEntry()], resists: [resist()] }),
-      NOW
+      NOW,
     );
     const parsed = parseSideQuestImport(stringifyExport(exported));
 
@@ -102,28 +104,40 @@ describe('SideQuest JSON exports', () => {
     };
 
     const parsed = parseSideQuestImport(
-      stringifyExport(createQuestLogExport(state({ history: [entry] }), NOW))
+      stringifyExport(createQuestLogExport(state({ history: [entry] }), NOW)),
     );
 
     expect(parsed.history).toEqual([entry]);
   });
 
   it('rejects unknown JSON instead of importing partial data', () => {
-    expect(() => parseSideQuestImport(JSON.stringify({ app: 'other', data: {} }))).toThrow(
-      /SideQuest export/
-    );
+    expect(() =>
+      parseSideQuestImport(JSON.stringify({ app: 'other', data: {} })),
+    ).toThrow(/SideQuest export/);
   });
 });
 
 describe('import merge behavior', () => {
   it('adds conflicting quest IDs under a new imported ID', () => {
-    const currentQuest = timerQuest({ name: 'Current timer', config: { seconds: 30 } });
-    const importedQuest = timerQuest({ name: 'Imported timer', config: { seconds: 90 } });
+    const currentQuest = timerQuest({
+      name: 'Current timer',
+      config: { seconds: 30 },
+    });
+    const importedQuest = timerQuest({
+      name: 'Imported timer',
+      config: { seconds: 90 },
+    });
     const parsed = parseSideQuestImport(
-      stringifyExport(createQuestExport(state({ quests: [importedQuest] }), NOW))
+      stringifyExport(
+        createQuestExport(state({ quests: [importedQuest] }), NOW),
+      ),
     );
 
-    const result = applyImportedData(state({ quests: [currentQuest] }), parsed, 'merge');
+    const result = applyImportedData(
+      state({ quests: [currentQuest] }),
+      parsed,
+      'merge',
+    );
 
     expect(result.addedQuests).toBe(1);
     expect(result.reassignedQuestIds).toBe(1);
@@ -135,9 +149,14 @@ describe('import merge behavior', () => {
 
   it('deduplicates quest log entries and resisted visits while merging', () => {
     const currentHistory = reflectionEntry();
-    const importedHistory = reflectionEntry({ id: 'history-2', text: 'A new record.' });
+    const importedHistory = reflectionEntry({
+      id: 'history-2',
+      text: 'A new record.',
+    });
     const currentResist = resist();
-    const importedResist = resist({ at: Date.parse('2026-06-20T21:00:00.000Z') });
+    const importedResist = resist({
+      at: Date.parse('2026-06-20T21:00:00.000Z'),
+    });
     const parsed = parseSideQuestImport(
       stringifyExport(
         createQuestLogExport(
@@ -145,15 +164,15 @@ describe('import merge behavior', () => {
             history: [currentHistory, importedHistory],
             resists: [currentResist, importedResist],
           }),
-          NOW
-        )
-      )
+          NOW,
+        ),
+      ),
     );
 
     const result = applyImportedData(
       state({ history: [currentHistory], resists: [currentResist] }),
       parsed,
-      'merge'
+      'merge',
     );
 
     expect(result.addedHistory).toBe(1);
@@ -167,7 +186,9 @@ describe('import merge behavior', () => {
   it('cleans schedule quest references when quests are replaced', () => {
     const importedQuest = timerQuest({ id: 'new-timer' });
     const parsed = parseSideQuestImport(
-      stringifyExport(createQuestExport(state({ quests: [importedQuest] }), NOW))
+      stringifyExport(
+        createQuestExport(state({ quests: [importedQuest] }), NOW),
+      ),
     );
 
     const result = applyImportedData(
@@ -186,7 +207,7 @@ describe('import merge behavior', () => {
         ],
       }),
       parsed,
-      'replace'
+      'replace',
     );
 
     expect(result.changes.quests).toEqual([importedQuest]);
@@ -215,7 +236,7 @@ describe('quest log CSV export', () => {
           }),
         ],
         resists: [resist({ hostname: 'news.example' })],
-      })
+      }),
     );
 
     expect(csv).toContain('event_type,created_at,created_at_ms');

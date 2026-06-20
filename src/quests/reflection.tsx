@@ -7,7 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { DEFAULT_PROMPTS } from './kinds';
 import { NumberInput } from './fields';
 import type { QuestKindUi, QuestRuntimeProps } from './types';
-import type { AppState, QuestResult, ReflectionSideQuest, SideQuest } from '../shared/types';
+import type {
+  AppState,
+  QuestResult,
+  ReflectionSideQuest,
+  SideQuest,
+} from '../shared/types';
 
 /** Each completion of this quest advances the rotation to the next prompt. */
 function promptFor(quest: ReflectionSideQuest, state: AppState): string {
@@ -65,7 +70,9 @@ function ReflectionForm({
             placeholder="Be honest. Nobody is grading this but you."
           />
           <div className="flex items-center justify-between gap-2">
-            <span className={`text-[13px] ${ready ? 'text-mint' : 'text-muted-foreground'}`}>
+            <span
+              className={`text-[13px] ${ready ? 'text-mint' : 'text-muted-foreground'}`}
+            >
               {ready ? 'Quest requirement met' : `${remaining} more characters`}
             </span>
             <Button type="submit" disabled={!ready}>
@@ -131,12 +138,20 @@ function ReflectionEditor({
               rows={1}
               className="min-h-8 flex-1 resize-y"
               value={prompt}
-              onChange={(e) => setPrompts(prompts.map((p, j) => (j === i ? e.target.value : p)))}
+              onChange={(e) =>
+                setPrompts(
+                  prompts.map((p, j) => (j === i ? e.target.value : p)),
+                )
+              }
             />
             <Button
               variant="destructive"
               size="icon"
-              title={prompts.length === 1 ? 'Keep at least one prompt' : 'Remove prompt'}
+              title={
+                prompts.length === 1
+                  ? 'Keep at least one prompt'
+                  : 'Remove prompt'
+              }
               disabled={prompts.length === 1}
               onClick={() => setPrompts(prompts.filter((_, j) => j !== i))}
             >
@@ -157,7 +172,9 @@ function ReflectionEditor({
         <NumberInput
           value={quest.config.minChars}
           max={2000}
-          onChange={(v) => onChange({ ...quest, config: { ...quest.config, minChars: v } })}
+          onChange={(v) =>
+            onChange({ ...quest, config: { ...quest.config, minChars: v } })
+          }
         />
         characters
       </Label>
@@ -173,7 +190,9 @@ function ReflectionLogDetail({
   return (
     <>
       {result.prompt && (
-        <p className="text-[13px] text-muted-foreground italic">{result.prompt}</p>
+        <p className="text-[13px] text-muted-foreground italic">
+          {result.prompt}
+        </p>
       )}
       <p className="whitespace-pre-wrap">{result.text}</p>
     </>

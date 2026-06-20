@@ -50,7 +50,7 @@ export function SettingsSection({ state }: { state: AppState }) {
     downloadTextFile(
       exportFileName('quests', now),
       stringifyExport(createQuestExport(state, now)),
-      'application/json;charset=utf-8'
+      'application/json;charset=utf-8',
     );
   }
 
@@ -59,7 +59,7 @@ export function SettingsSection({ state }: { state: AppState }) {
     downloadTextFile(
       exportFileName('quest-log', now),
       stringifyExport(createQuestLogExport(state, now)),
-      'application/json;charset=utf-8'
+      'application/json;charset=utf-8',
     );
   }
 
@@ -67,7 +67,7 @@ export function SettingsSection({ state }: { state: AppState }) {
     downloadTextFile(
       exportFileName('quest-log-csv'),
       createQuestLogCsv(state),
-      'text/csv;charset=utf-8'
+      'text/csv;charset=utf-8',
     );
   }
 
@@ -84,7 +84,9 @@ export function SettingsSection({ state }: { state: AppState }) {
       setImportMessage(null);
     } catch (error) {
       setPendingImport(null);
-      setImportError(error instanceof Error ? error.message : 'Could not import that file.');
+      setImportError(
+        error instanceof Error ? error.message : 'Could not import that file.',
+      );
       setImportMessage(null);
     }
   }
@@ -119,7 +121,10 @@ export function SettingsSection({ state }: { state: AppState }) {
               onValueChange={(value) => {
                 if (!value) return;
                 void setState({
-                  settings: { ...state.settings, theme: value as ThemePreference },
+                  settings: {
+                    ...state.settings,
+                    theme: value as ThemePreference,
+                  },
                 });
               }}
             >
@@ -146,8 +151,9 @@ export function SettingsSection({ state }: { state: AppState }) {
             <div className="flex flex-col gap-0.5">
               <span className="font-medium">Time saved per resisted visit</span>
               <span className="text-muted-foreground">
-                A resisted visit is one where you hit the wall and walked away without earning a
-                pass. The quest log's time-saved estimate counts this many minutes for each.
+                A resisted visit is one where you hit the wall and walked away
+                without earning a pass. The quest log's time-saved estimate
+                counts this many minutes for each.
               </span>
             </div>
             <Label className="shrink-0 gap-1.5 font-normal text-muted-foreground">
@@ -161,7 +167,10 @@ export function SettingsSection({ state }: { state: AppState }) {
                   const v = Number(e.target.value);
                   if (Number.isFinite(v) && v >= 1) {
                     void setState({
-                      settings: { ...state.settings, minutesPerResistedVisit: v },
+                      settings: {
+                        ...state.settings,
+                        minutesPerResistedVisit: v,
+                      },
                     });
                   }
                 }}
@@ -212,14 +221,21 @@ export function SettingsSection({ state }: { state: AppState }) {
               className="hidden"
               onChange={(event) => void chooseImportFile(event)}
             />
-            <Button variant="outline" onClick={() => importInputRef.current?.click()}>
+            <Button
+              variant="outline"
+              onClick={() => importInputRef.current?.click()}
+            >
               <Upload aria-hidden="true" />
               Import JSON
             </Button>
           </BackupRow>
 
-          {importError && <p className="text-[13px] text-destructive">{importError}</p>}
-          {importMessage && <p className="text-[13px] text-mint">{importMessage}</p>}
+          {importError && (
+            <p className="text-[13px] text-destructive">{importError}</p>
+          )}
+          {importMessage && (
+            <p className="text-[13px] text-mint">{importMessage}</p>
+          )}
         </CardContent>
       </Card>
 
@@ -254,9 +270,12 @@ export function SettingsSection({ state }: { state: AppState }) {
             <>
               <DialogHeader>
                 <DialogTitle>
-                  Import {pendingImport.kind === 'quests' ? 'quests' : 'quest log'}?
+                  Import{' '}
+                  {pendingImport.kind === 'quests' ? 'quests' : 'quest log'}?
                 </DialogTitle>
-                <DialogDescription>{describeImportSummary(pendingImport.summary)}</DialogDescription>
+                <DialogDescription>
+                  {describeImportSummary(pendingImport.summary)}
+                </DialogDescription>
               </DialogHeader>
 
               <RadioGroup
@@ -268,7 +287,11 @@ export function SettingsSection({ state }: { state: AppState }) {
                   htmlFor="import-merge"
                   className="flex cursor-pointer items-start gap-3 rounded-md border p-3 font-normal"
                 >
-                  <RadioGroupItem id="import-merge" value="merge" className="mt-0.5" />
+                  <RadioGroupItem
+                    id="import-merge"
+                    value="merge"
+                    className="mt-0.5"
+                  />
                   <span className="flex flex-col gap-0.5">
                     <span className="font-medium">Merge with current data</span>
                     <span className="text-muted-foreground">
@@ -280,10 +303,15 @@ export function SettingsSection({ state }: { state: AppState }) {
                   htmlFor="import-replace"
                   className="flex cursor-pointer items-start gap-3 rounded-md border p-3 font-normal"
                 >
-                  <RadioGroupItem id="import-replace" value="replace" className="mt-0.5" />
+                  <RadioGroupItem
+                    id="import-replace"
+                    value="replace"
+                    className="mt-0.5"
+                  />
                   <span className="flex flex-col gap-0.5">
                     <span className="font-medium">
-                      Replace current {pendingImport.kind === 'quests' ? 'quests' : 'quest log'}
+                      Replace current{' '}
+                      {pendingImport.kind === 'quests' ? 'quests' : 'quest log'}
                     </span>
                     <span className="text-muted-foreground">
                       {pendingImport.kind === 'quests'
@@ -323,7 +351,9 @@ function BackupRow({
         <span className="font-medium">{title}</span>
         <span className="text-muted-foreground">{description}</span>
       </div>
-      <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">{children}</div>
+      <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">
+        {children}
+      </div>
     </div>
   );
 }
@@ -382,7 +412,9 @@ function DangerRow({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{title}?</DialogTitle>
-            <DialogDescription>{description} This cannot be undone.</DialogDescription>
+            <DialogDescription>
+              {description} This cannot be undone.
+            </DialogDescription>
           </DialogHeader>
           <form
             className="flex flex-col gap-2"
@@ -391,10 +423,15 @@ function DangerRow({
               confirm();
             }}
           >
-            <Label htmlFor={`confirm-${phrase}`} className="font-normal text-muted-foreground">
+            <Label
+              htmlFor={`confirm-${phrase}`}
+              className="font-normal text-muted-foreground"
+            >
               Type{' '}
-              <code className="rounded bg-muted px-1 py-0.5 text-foreground">{phrase}</code> to
-              confirm
+              <code className="rounded bg-muted px-1 py-0.5 text-foreground">
+                {phrase}
+              </code>{' '}
+              to confirm
             </Label>
             <Input
               id={`confirm-${phrase}`}

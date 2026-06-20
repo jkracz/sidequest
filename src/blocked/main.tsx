@@ -9,5 +9,5 @@ initTheme();
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <BlockedApp />
-  </React.StrictMode>
+  </React.StrictMode>,
 );

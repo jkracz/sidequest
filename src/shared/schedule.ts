@@ -20,7 +20,10 @@ export function isTimeBlockActive(tb: TimeBlock, now: Date): boolean {
   return tb.days.includes(prevDay) && mins < end;
 }
 
-export function activeTimeBlocks(timeBlocks: TimeBlock[], now: Date): TimeBlock[] {
+export function activeTimeBlocks(
+  timeBlocks: TimeBlock[],
+  now: Date,
+): TimeBlock[] {
   return timeBlocks.filter((tb) => isTimeBlockActive(tb, now));
 }
 
@@ -51,7 +54,10 @@ export function activeTimeBlockEndsAt(tb: TimeBlock, now: Date): number | null {
  * Epoch ms of the next moment any time block begins, or null if there are
  * no scheduled blocks. Used to schedule the tab-sweep alarm.
  */
-export function nextBlockStart(timeBlocks: TimeBlock[], now: Date): number | null {
+export function nextBlockStart(
+  timeBlocks: TimeBlock[],
+  now: Date,
+): number | null {
   let best: number | null = null;
   for (const tb of timeBlocks) {
     const start = minutesOf(tb.startTime);
@@ -73,7 +79,9 @@ export function formatTime(time: string): string {
   const [h, m] = time.split(':').map(Number);
   const suffix = h < 12 ? 'am' : 'pm';
   const hour12 = h % 12 === 0 ? 12 : h % 12;
-  return m === 0 ? `${hour12}${suffix}` : `${hour12}:${String(m).padStart(2, '0')}${suffix}`;
+  return m === 0
+    ? `${hour12}${suffix}`
+    : `${hour12}:${String(m).padStart(2, '0')}${suffix}`;
 }
 
 /** "1:05" style m:ss rendering of a duration in seconds. */
@@ -83,4 +91,12 @@ export function formatSeconds(total: number): string {
   return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+export const DAY_LABELS = [
+  'Sun',
+  'Mon',
+  'Tue',
+  'Wed',
+  'Thu',
+  'Fri',
+  'Sat',
+] as const;

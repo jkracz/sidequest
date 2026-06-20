@@ -3,7 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dices, Settings2 } from 'lucide-react';
 import { QuestTypeIcon } from '../components/QuestTypeIcon';
-import { QuestRunner, resetQuestProgress, updateUrlParams } from '../quests/runtime';
+import {
+  QuestRunner,
+  resetQuestProgress,
+  updateUrlParams,
+} from '../quests/runtime';
 import { decideBlock, eligibleQuests } from '../shared/blocking';
 import { hostnameOf } from '../shared/match';
 import { getState, setState } from '../shared/storage';
@@ -34,7 +38,7 @@ async function registerResist(hostname: string): Promise<void> {
   const current = await getState();
   const now = Date.now();
   const recent = current.resists.some(
-    (r) => r.hostname === hostname && now - r.at < RESIST_DEDUPE_MS
+    (r) => r.hostname === hostname && now - r.at < RESIST_DEDUPE_MS,
   );
   if (!recent) {
     await setState({ resists: [...current.resists, { hostname, at: now }] });
@@ -43,10 +47,13 @@ async function registerResist(hostname: string): Promise<void> {
 
 export function BlockedApp() {
   const [state, setAppState] = useState<AppState | null>(null);
-  const [chosenQuestId, setChosenQuestId] = useState<string | null>(() => stringParam('quest'));
+  const [chosenQuestId, setChosenQuestId] = useState<string | null>(() =>
+    stringParam('quest'),
+  );
   const target = targetFromUrl();
   const hostname = target ? hostnameOf(target) : null;
-  const decision = state && target ? decideBlock(state, target, new Date()) : null;
+  const decision =
+    state && target ? decideBlock(state, target, new Date()) : null;
 
   useEffect(() => {
     void getState().then(setAppState);
@@ -80,7 +87,9 @@ export function BlockedApp() {
   const quests = eligibleQuests(state, decision!);
   const hasQuestBypass = quests.length > 0;
   const quest =
-    quests.length === 1 ? quests[0] : (quests.find((q) => q.id === chosenQuestId) ?? null);
+    quests.length === 1
+      ? quests[0]
+      : (quests.find((q) => q.id === chosenQuestId) ?? null);
 
   function chooseQuest(id: string) {
     setChosenQuestId(id);
@@ -121,7 +130,7 @@ export function BlockedApp() {
         },
       ],
       resists: current.resists.filter(
-        (r) => !(r.hostname === hostname && now - r.at < RESIST_WITHDRAW_MS)
+        (r) => !(r.hostname === hostname && now - r.at < RESIST_WITHDRAW_MS),
       ),
     });
     window.location.href = target!;
@@ -131,7 +140,9 @@ export function BlockedApp() {
     <main className="mx-auto max-w-2xl px-6 pt-[14vh] pb-12 text-center">
       <p className="flex items-center justify-center gap-2 text-[17px] text-muted-foreground">
         <img src="/sidequestLogo32.png" alt="" className="size-5" />
-        {hasQuestBypass ? 'A side quest stands between you and' : 'SideQuest blocked'}
+        {hasQuestBypass
+          ? 'A side quest stands between you and'
+          : 'SideQuest blocked'}
       </p>
       <h1
         className={`mt-1 text-4xl font-bold text-primary ${hasQuestBypass ? 'mb-8' : 'mb-5'}`}
@@ -172,10 +183,16 @@ export function BlockedApp() {
 }
 
 function openOptionsPage(): void {
-  window.location.href = chrome.runtime.getURL('src/options/index.html?tab=schedule');
+  window.location.href = chrome.runtime.getURL(
+    'src/options/index.html?tab=schedule',
+  );
 }
 
-function BlockedOutright({ hasConfiguredQuests }: { hasConfiguredQuests: boolean }) {
+function BlockedOutright({
+  hasConfiguredQuests,
+}: {
+  hasConfiguredQuests: boolean;
+}) {
   return (
     <div className="flex flex-col items-center gap-7">
       <p className="font-serif text-[17px] text-muted-foreground italic">
@@ -201,7 +218,9 @@ function QuestPicker({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-[19px] font-semibold">Choose your quest</CardTitle>
+        <CardTitle className="text-[19px] font-semibold">
+          Choose your quest
+        </CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         {quests.map((q) => (
@@ -220,7 +239,11 @@ function QuestPicker({
             </span>
           </Button>
         ))}
-        <Button onClick={() => onChoose(quests[Math.floor(Math.random() * quests.length)].id)}>
+        <Button
+          onClick={() =>
+            onChoose(quests[Math.floor(Math.random() * quests.length)].id)
+          }
+        >
           <Dices aria-hidden="true" />
           Surprise me
         </Button>

@@ -1,6 +1,12 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
@@ -37,20 +43,24 @@ export function ScheduleSection({ state }: { state: AppState }) {
 
   async function updateBlock(updated: TimeBlock) {
     await setState({
-      timeBlocks: state.timeBlocks.map((tb) => (tb.id === updated.id ? updated : tb)),
+      timeBlocks: state.timeBlocks.map((tb) =>
+        tb.id === updated.id ? updated : tb,
+      ),
     });
   }
 
   async function deleteBlock(id: string) {
-    await setState({ timeBlocks: state.timeBlocks.filter((tb) => tb.id !== id) });
+    await setState({
+      timeBlocks: state.timeBlocks.filter((tb) => tb.id !== id),
+    });
   }
 
   return (
     <section className="flex flex-col items-start gap-4">
       {state.timeBlocks.length === 0 && (
         <p className="text-muted-foreground">
-          No time blocks yet. A time block is when a block list is enforced — outside of one,
-          everything is open.
+          No time blocks yet. A time block is when a block list is enforced —
+          outside of one, everything is open.
         </p>
       )}
       {state.timeBlocks.map((tb) => (
@@ -107,7 +117,9 @@ function TimeBlockCard({
           />
         </CardTitle>
         <CardAction className="flex items-center gap-2">
-          {active && <Badge className="bg-mint text-mint-deep">Active now</Badge>}
+          {active && (
+            <Badge className="bg-mint text-mint-deep">Active now</Badge>
+          )}
           <DeleteTimeBlockDialog block={block} onDelete={onDelete} />
         </CardAction>
       </CardHeader>
@@ -138,7 +150,9 @@ function TimeBlockCard({
               type="time"
               className="w-fit"
               value={block.startTime}
-              onChange={(e) => void onChange({ ...block, startTime: e.target.value })}
+              onChange={(e) =>
+                void onChange({ ...block, startTime: e.target.value })
+              }
             />
           </Label>
           <Label className="font-normal">
@@ -147,16 +161,22 @@ function TimeBlockCard({
               type="time"
               className="w-fit"
               value={block.endTime}
-              onChange={(e) => void onChange({ ...block, endTime: e.target.value })}
+              onChange={(e) =>
+                void onChange({ ...block, endTime: e.target.value })
+              }
             />
           </Label>
-          {overnight && <span className="text-muted-foreground">spans midnight</span>}
+          {overnight && (
+            <span className="text-muted-foreground">spans midnight</span>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-[13px] text-muted-foreground">Enforces:</span>
           {state.blockLists.length === 0 && (
-            <span className="text-muted-foreground">no block lists exist yet</span>
+            <span className="text-muted-foreground">
+              no block lists exist yet
+            </span>
           )}
           {state.blockLists.map((bl) => (
             <Label
@@ -173,7 +193,9 @@ function TimeBlockCard({
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[13px] text-muted-foreground">Quests offered:</span>
+          <span className="text-[13px] text-muted-foreground">
+            Quests offered:
+          </span>
           {state.quests.map((q) => (
             <Label
               key={q.id}
@@ -197,7 +219,13 @@ function TimeBlockCard({
   );
 }
 
-function DeleteTimeBlockDialog({ block, onDelete }: { block: TimeBlock; onDelete: () => void }) {
+function DeleteTimeBlockDialog({
+  block,
+  onDelete,
+}: {
+  block: TimeBlock;
+  onDelete: () => void;
+}) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -207,8 +235,8 @@ function DeleteTimeBlockDialog({ block, onDelete }: { block: TimeBlock; onDelete
         <DialogHeader>
           <DialogTitle>Delete time block?</DialogTitle>
           <DialogDescription>
-            This will delete "{block.label || 'Untitled time block'}" from your schedule. This
-            cannot be undone.
+            This will delete "{block.label || 'Untitled time block'}" from your
+            schedule. This cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

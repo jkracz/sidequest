@@ -1,4 +1,9 @@
-import { KIND_DATA, QUEST_TYPES, defaultQuests, migrateQuest } from '../quests/kinds';
+import {
+  KIND_DATA,
+  QUEST_TYPES,
+  defaultQuests,
+  migrateQuest,
+} from '../quests/kinds';
 import type { AppState, HistoryEntry, SideQuest } from './types';
 
 export const DEFAULT_STATE: AppState = {
@@ -49,7 +54,9 @@ function migrateHistoryEntry(entry: LegacyHistoryEntry): HistoryEntry {
  * for new keys.
  */
 function migrate(stored: Record<string, unknown>): AppState {
-  const legacySettings = stored.settings as { passDurationMinutes?: number } | undefined;
+  const legacySettings = stored.settings as
+    | { passDurationMinutes?: number }
+    | undefined;
   const legacyMinutes = legacySettings?.passDurationMinutes ?? 10;
 
   const quests =
@@ -63,9 +70,13 @@ function migrate(stored: Record<string, unknown>): AppState {
     }
   }
 
-  const legacyReflections = stored.reflections as LegacyReflectionEntry[] | undefined;
+  const legacyReflections = stored.reflections as
+    | LegacyReflectionEntry[]
+    | undefined;
   const history =
-    (stored.history as LegacyHistoryEntry[] | undefined)?.map(migrateHistoryEntry) ??
+    (stored.history as LegacyHistoryEntry[] | undefined)?.map(
+      migrateHistoryEntry,
+    ) ??
     legacyReflections?.map(
       (r): HistoryEntry => ({
         id: r.id,
@@ -77,7 +88,7 @@ function migrate(stored: Record<string, unknown>): AppState {
         createdAt: r.createdAt,
         minutesEarned: legacyMinutes,
         text: r.text,
-      })
+      }),
     ) ??
     [];
 
@@ -91,7 +102,8 @@ function migrate(stored: Record<string, unknown>): AppState {
     resists: (stored.resists as AppState['resists']) ?? [],
     settings: {
       minutesPerResistedVisit:
-        (stored.settings as AppState['settings'] | undefined)?.minutesPerResistedVisit ??
+        (stored.settings as AppState['settings'] | undefined)
+          ?.minutesPerResistedVisit ??
         DEFAULT_STATE.settings.minutesPerResistedVisit,
       theme:
         (stored.settings as AppState['settings'] | undefined)?.theme ??
@@ -112,7 +124,7 @@ function hasLegacyShape(stored: Record<string, unknown>): boolean {
     (q) =>
       q.passDurationMinutes === undefined ||
       (q as { type: string }).type === 'pushups' ||
-      (q.type === 'reflection' && q.config && 'prompt' in q.config)
+      (q.type === 'reflection' && q.config && 'prompt' in q.config),
   );
   const hasLegacyHistory = history?.some((h) => h.questType === 'pushups');
   return (hasLegacyQuest ?? false) || (hasLegacyHistory ?? false);

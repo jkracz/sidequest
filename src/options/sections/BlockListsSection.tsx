@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardAction, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   Dialog,
   DialogClose,
@@ -19,13 +25,19 @@ import type { AppState, BlockList } from '../../shared/types';
 
 export function BlockListsSection({ state }: { state: AppState }) {
   async function createList() {
-    const list: BlockList = { id: crypto.randomUUID(), name: 'New list', sites: [] };
+    const list: BlockList = {
+      id: crypto.randomUUID(),
+      name: 'New list',
+      sites: [],
+    };
     await setState({ blockLists: [...state.blockLists, list] });
   }
 
   async function updateList(updated: BlockList) {
     await setState({
-      blockLists: state.blockLists.map((bl) => (bl.id === updated.id ? updated : bl)),
+      blockLists: state.blockLists.map((bl) =>
+        bl.id === updated.id ? updated : bl,
+      ),
     });
   }
 
@@ -109,7 +121,10 @@ function BlockListCard({
                 title="Remove"
                 className="text-muted-foreground hover:text-destructive"
                 onClick={() =>
-                  void onChange({ ...list, sites: list.sites.filter((s) => s !== site) })
+                  void onChange({
+                    ...list,
+                    sites: list.sites.filter((s) => s !== site),
+                  })
                 }
               >
                 ✕
@@ -143,7 +158,13 @@ function BlockListCard({
   );
 }
 
-function DeleteBlockListDialog({ list, onDelete }: { list: BlockList; onDelete: () => void }) {
+function DeleteBlockListDialog({
+  list,
+  onDelete,
+}: {
+  list: BlockList;
+  onDelete: () => void;
+}) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -153,8 +174,8 @@ function DeleteBlockListDialog({ list, onDelete }: { list: BlockList; onDelete: 
         <DialogHeader>
           <DialogTitle>Delete block list?</DialogTitle>
           <DialogDescription>
-            This will delete "{list.name || 'Untitled block list'}" and remove it from any time
-            blocks that use it. This cannot be undone.
+            This will delete "{list.name || 'Untitled block list'}" and remove
+            it from any time blocks that use it. This cannot be undone.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>

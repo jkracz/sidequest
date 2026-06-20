@@ -26,12 +26,17 @@ interface ExportEnvelopeBase<TKind extends ExportKind, TData> {
   data: TData;
 }
 
-export type QuestExportEnvelope = ExportEnvelopeBase<'quests', { quests: SideQuest[] }>;
+export type QuestExportEnvelope = ExportEnvelopeBase<
+  'quests',
+  { quests: SideQuest[] }
+>;
 export type QuestLogExportEnvelope = ExportEnvelopeBase<
   'quest-log',
   { history: HistoryEntry[]; resists: ResistedVisit[] }
 >;
-export type SideQuestExportEnvelope = QuestExportEnvelope | QuestLogExportEnvelope;
+export type SideQuestExportEnvelope =
+  | QuestExportEnvelope
+  | QuestLogExportEnvelope;
 
 export interface ParsedImport {
   kind: ExportKind;
@@ -98,7 +103,10 @@ const CSV_COLUMNS = [
 type CsvColumn = (typeof CSV_COLUMNS)[number];
 type CsvRow = Record<CsvColumn, string>;
 
-export function createQuestExport(state: AppState, now = new Date()): QuestExportEnvelope {
+export function createQuestExport(
+  state: AppState,
+  now = new Date(),
+): QuestExportEnvelope {
   return {
     app: SIDEQUEST_EXPORT_APP,
     kind: 'quests',
@@ -110,7 +118,10 @@ export function createQuestExport(state: AppState, now = new Date()): QuestExpor
   };
 }
 
-export function createQuestLogExport(state: AppState, now = new Date()): QuestLogExportEnvelope {
+export function createQuestLogExport(
+  state: AppState,
+  now = new Date(),
+): QuestLogExportEnvelope {
   return {
     app: SIDEQUEST_EXPORT_APP,
     kind: 'quest-log',
@@ -127,7 +138,10 @@ export function stringifyExport(envelope: SideQuestExportEnvelope): string {
   return `${JSON.stringify(envelope, null, 2)}\n`;
 }
 
-export function exportFileName(kind: ExportKind | 'quest-log-csv', now = new Date()): string {
+export function exportFileName(
+  kind: ExportKind | 'quest-log-csv',
+  now = new Date(),
+): string {
   const date = now.toISOString().slice(0, 10);
   if (kind === 'quests') return `sidequest-quests-${date}.json`;
   if (kind === 'quest-log') return `sidequest-quest-log-${date}.json`;
@@ -142,7 +156,9 @@ export function createQuestLogCsv(state: AppState): string {
 
   return [
     CSV_COLUMNS.join(','),
-    ...rows.map((row) => CSV_COLUMNS.map((column) => csvEscape(row[column])).join(',')),
+    ...rows.map((row) =>
+      CSV_COLUMNS.map((column) => csvEscape(row[column])).join(','),
+    ),
   ].join('\n');
 }
 
@@ -161,7 +177,9 @@ export function parseSideQuestImport(jsonText: string): ParsedImport {
     throw new ImportFormatError('The selected file is not a SideQuest export.');
   }
   if (parsed.version !== SIDEQUEST_EXPORT_VERSION) {
-    throw new ImportFormatError('This SideQuest export version is not supported.');
+    throw new ImportFormatError(
+      'This SideQuest export version is not supported.',
+    );
   }
   if (parsed.kind !== 'quests' && parsed.kind !== 'quest-log') {
     throw new ImportFormatError('This SideQuest export type is not supported.');
@@ -181,8 +199,16 @@ export function parseSideQuestImport(jsonText: string): ParsedImport {
     };
   }
 
-  const history = parseArray(parsed.data.history, normalizeHistoryEntry, 'history');
-  const resists = parseArray(parsed.data.resists, normalizeResistedVisit, 'resists');
+  const history = parseArray(
+    parsed.data.history,
+    normalizeHistoryEntry,
+    'history',
+  );
+  const resists = parseArray(
+    parsed.data.resists,
+    normalizeResistedVisit,
+    'resists',
+  );
   return {
     kind: 'quest-log',
     quests: [],
@@ -195,9 +221,10 @@ export function parseSideQuestImport(jsonText: string): ParsedImport {
 export function applyImportedData(
   state: AppState,
   parsed: ParsedImport,
-  mode: ImportMode
+  mode: ImportMode,
 ): AppliedImport {
-  if (parsed.kind === 'quests') return applyImportedQuests(state, parsed.quests, mode);
+  if (parsed.kind === 'quests')
+    return applyImportedQuests(state, parsed.quests, mode);
   return applyImportedQuestLog(state, parsed.history, parsed.resists, mode);
 }
 
@@ -219,7 +246,7 @@ export function describeAppliedImport(result: AppliedImport): string {
     if (result.mode === 'replace') {
       return `Replaced quests with ${result.replacedQuests} ${pluralize(
         'imported quest',
-        result.replacedQuests
+        result.replacedQuests,
       )}.`;
     }
 
@@ -228,41 +255,41 @@ export function describeAppliedImport(result: AppliedImport): string {
         ? ` ${result.reassignedQuestIds} ${pluralize(
             'ID was',
             result.reassignedQuestIds,
-            'IDs were'
+            'IDs were',
           )} changed to avoid conflicts.`
         : '';
     return `Added ${result.addedQuests} ${pluralize(
       'quest',
-      result.addedQuests
+      result.addedQuests,
     )}; skipped ${result.skippedQuests} existing ${pluralize(
       'quest',
-      result.skippedQuests
+      result.skippedQuests,
     )}.${suffix}`;
   }
 
   if (result.mode === 'replace') {
     return `Replaced the quest log with ${result.replacedHistory} completed ${pluralize(
       'quest',
-      result.replacedHistory
+      result.replacedHistory,
     )} and ${result.replacedResists} resisted ${pluralize('visit', result.replacedResists)}.`;
   }
 
   return `Added ${result.addedHistory} completed ${pluralize(
     'quest',
-    result.addedHistory
+    result.addedHistory,
   )} and ${result.addedResists} resisted ${pluralize(
     'visit',
-    result.addedResists
+    result.addedResists,
   )}; skipped ${result.skippedHistory + result.skippedResists} existing ${pluralize(
     'record',
-    result.skippedHistory + result.skippedResists
+    result.skippedHistory + result.skippedResists,
   )}.`;
 }
 
 function applyImportedQuests(
   state: AppState,
   quests: SideQuest[],
-  mode: ImportMode
+  mode: ImportMode,
 ): AppliedImport {
   if (mode === 'replace') {
     const questIds = new Set(quests.map((quest) => quest.id));
@@ -309,7 +336,10 @@ function applyImportedQuests(
       continue;
     }
 
-    const reassigned = { ...cloneJson(imported), id: uniqueId(imported.id, existingIds) };
+    const reassigned = {
+      ...cloneJson(imported),
+      id: uniqueId(imported.id, existingIds),
+    };
     existingIds.add(reassigned.id);
     nextQuests.push(reassigned);
     addedQuests++;
@@ -337,7 +367,7 @@ function applyImportedQuestLog(
   state: AppState,
   history: HistoryEntry[],
   resists: ResistedVisit[],
-  mode: ImportMode
+  mode: ImportMode,
 ): AppliedImport {
   if (mode === 'replace') {
     return {
@@ -456,13 +486,17 @@ function historyEntryToCsvRow(entry: HistoryEntry): CsvRow {
       return {
         ...base,
         flashcards_reviewed: String(entry.reviewed),
-        flashcards_correct: entry.correct === undefined ? '' : String(entry.correct),
+        flashcards_correct:
+          entry.correct === undefined ? '' : String(entry.correct),
         flashcards_missed: entry.cards
           ? String(entry.cards.filter((card) => card.missed).length)
           : '',
         flashcards_cards:
           entry.cards
-            ?.map((card) => `${card.front} -> ${card.back}${card.missed ? ' (missed)' : ''}`)
+            ?.map(
+              (card) =>
+                `${card.front} -> ${card.back}${card.missed ? ' (missed)' : ''}`,
+            )
             .join('; ') ?? '',
       };
   }
@@ -495,7 +529,9 @@ function resistedVisitToCsvRow(resist: ResistedVisit): CsvRow {
 function resultSummary(entry: HistoryEntry): string {
   switch (entry.questType) {
     case 'reflection':
-      return entry.prompt ? `Reflection: ${entry.prompt}` : 'Reflection completed';
+      return entry.prompt
+        ? `Reflection: ${entry.prompt}`
+        : 'Reflection completed';
     case 'timer':
       return `Waited ${entry.seconds} ${pluralize('second', entry.seconds)}`;
     case 'counter':
@@ -552,7 +588,15 @@ function normalizeHistoryEntry(raw: unknown): HistoryEntry | null {
     return null;
   }
 
-  const base = { id, questId, questName, hostname, targetUrl, createdAt, minutesEarned };
+  const base = {
+    id,
+    questId,
+    questName,
+    hostname,
+    targetUrl,
+    createdAt,
+    minutesEarned,
+  };
   switch (type) {
     case 'reflection': {
       const text = normalizeString(raw.text);
@@ -569,7 +613,9 @@ function normalizeHistoryEntry(raw: unknown): HistoryEntry | null {
     case 'counter': {
       const count = normalizePositiveNumber(raw.count);
       const unit = normalizeNonEmptyString(raw.unit);
-      return count === null || !unit ? null : { ...base, questType: type, count, unit };
+      return count === null || !unit
+        ? null
+        : { ...base, questType: type, count, unit };
     }
     case 'flashcards': {
       const reviewed = normalizePositiveNumber(raw.reviewed);
@@ -598,7 +644,9 @@ function normalizeResistedVisit(raw: unknown): ResistedVisit | null {
 function normalizeReflectionConfig(raw: unknown): ReflectionConfig {
   const cfg = isRecord(raw) ? raw : {};
   const prompts = Array.isArray(cfg.prompts)
-    ? cfg.prompts.filter((prompt): prompt is string => typeof prompt === 'string')
+    ? cfg.prompts.filter(
+        (prompt): prompt is string => typeof prompt === 'string',
+      )
     : typeof cfg.prompt === 'string'
       ? [cfg.prompt]
       : [...DEFAULT_PROMPTS];
@@ -618,7 +666,10 @@ function normalizeTimerConfig(raw: unknown): TimerConfig {
 function normalizeCounterConfig(raw: unknown): CounterConfig {
   const cfg = isRecord(raw) ? raw : {};
   return {
-    target: normalizePositiveNumber(cfg.target) ?? normalizePositiveNumber(cfg.reps) ?? 10,
+    target:
+      normalizePositiveNumber(cfg.target) ??
+      normalizePositiveNumber(cfg.reps) ??
+      10,
     unit: normalizeNonEmptyString(cfg.unit) ?? 'push-up',
     prompt: normalizeNonEmptyString(cfg.prompt) ?? 'Drop and give yourself',
   };
@@ -639,7 +690,10 @@ function normalizeFlashcardConfig(raw: unknown): FlashcardConfig {
   };
 }
 
-function normalizeFlashcardItem(raw: unknown, index: number): FlashcardItem | null {
+function normalizeFlashcardItem(
+  raw: unknown,
+  index: number,
+): FlashcardItem | null {
   if (!isRecord(raw)) return null;
   const front = normalizeString(raw.front);
   const back = normalizeString(raw.back);
@@ -652,7 +706,7 @@ function normalizeFlashcardItem(raw: unknown, index: number): FlashcardItem | nu
 }
 
 function normalizeOptionalFlashcardResults(
-  raw: unknown
+  raw: unknown,
 ): { front: string; back: string; missed: boolean }[] | undefined {
   if (raw === undefined) return undefined;
   if (!Array.isArray(raw)) return undefined;
@@ -662,10 +716,14 @@ function normalizeOptionalFlashcardResults(
       if (!isRecord(card)) return null;
       const front = normalizeString(card.front);
       const back = normalizeString(card.back);
-      if (front === null || back === null || typeof card.missed !== 'boolean') return null;
+      if (front === null || back === null || typeof card.missed !== 'boolean')
+        return null;
       return { front, back, missed: card.missed };
     })
-    .filter((card): card is { front: string; back: string; missed: boolean } => card !== null);
+    .filter(
+      (card): card is { front: string; back: string; missed: boolean } =>
+        card !== null,
+    );
 
   return cards.length > 0 ? cards : undefined;
 }
@@ -673,14 +731,18 @@ function normalizeOptionalFlashcardResults(
 function parseArray<T>(
   raw: unknown,
   normalize: (value: unknown) => T | null,
-  label: string
+  label: string,
 ): T[] {
   if (!Array.isArray(raw)) {
-    throw new ImportFormatError(`This SideQuest export has invalid ${label} data.`);
+    throw new ImportFormatError(
+      `This SideQuest export has invalid ${label} data.`,
+    );
   }
   const normalized = raw.map(normalize);
   if (normalized.some((value) => value === null)) {
-    throw new ImportFormatError(`This SideQuest export has invalid ${label} data.`);
+    throw new ImportFormatError(
+      `This SideQuest export has invalid ${label} data.`,
+    );
   }
   return normalized as T[];
 }
@@ -689,21 +751,27 @@ function summarizeImport(
   kind: ExportKind,
   quests: SideQuest[],
   history: HistoryEntry[],
-  resists: ResistedVisit[]
+  resists: ResistedVisit[],
 ): ImportSummary {
-  const activityTimes = [...history.map((entry) => entry.createdAt), ...resists.map((r) => r.at)];
+  const activityTimes = [
+    ...history.map((entry) => entry.createdAt),
+    ...resists.map((r) => r.at),
+  ];
   return {
     kind,
     quests: quests.length,
     history: history.length,
     resists: resists.length,
-    firstActivityAt: activityTimes.length === 0 ? null : Math.min(...activityTimes),
-    lastActivityAt: activityTimes.length === 0 ? null : Math.max(...activityTimes),
+    firstActivityAt:
+      activityTimes.length === 0 ? null : Math.min(...activityTimes),
+    lastActivityAt:
+      activityTimes.length === 0 ? null : Math.max(...activityTimes),
   };
 }
 
 function formatActivityRange(summary: ImportSummary): string | null {
-  if (summary.firstActivityAt === null || summary.lastActivityAt === null) return null;
+  if (summary.firstActivityAt === null || summary.lastActivityAt === null)
+    return null;
   const first = new Date(summary.firstActivityAt).toLocaleDateString();
   const last = new Date(summary.lastActivityAt).toLocaleDateString();
   return first === last ? first : `${first} - ${last}`;
@@ -736,12 +804,19 @@ function csvEscape(value: string): string {
   return `"${value.replaceAll('"', '""')}"`;
 }
 
-function pluralize(singular: string, count: number, plural = `${singular}s`): string {
+function pluralize(
+  singular: string,
+  count: number,
+  plural = `${singular}s`,
+): string {
   return count === 1 ? singular : plural;
 }
 
 function normalizeQuestType(value: unknown): QuestType | null {
-  return value === 'reflection' || value === 'timer' || value === 'counter' || value === 'flashcards'
+  return value === 'reflection' ||
+    value === 'timer' ||
+    value === 'counter' ||
+    value === 'flashcards'
     ? value
     : null;
 }
@@ -773,11 +848,17 @@ function normalizeNonNegativeNumber(value: unknown): number | null {
 }
 
 function normalizeOptionalPositiveNumber(value: unknown): number | undefined {
-  return value === undefined ? undefined : normalizePositiveNumber(value) ?? undefined;
+  return value === undefined
+    ? undefined
+    : (normalizePositiveNumber(value) ?? undefined);
 }
 
-function normalizeOptionalNonNegativeNumber(value: unknown): number | undefined {
-  return value === undefined ? undefined : normalizeNonNegativeNumber(value) ?? undefined;
+function normalizeOptionalNonNegativeNumber(
+  value: unknown,
+): number | undefined {
+  return value === undefined
+    ? undefined
+    : (normalizeNonNegativeNumber(value) ?? undefined);
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

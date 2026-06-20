@@ -37,7 +37,7 @@ export function initRound(cards: FlashcardItem[]): RoundState {
  */
 export function reduceRound(
   s: RoundState,
-  action: { result: Grade; required: number | null }
+  action: { result: Grade; required: number | null },
 ): RoundState {
   if (s.finished || s.pending.length === 0) return s;
   const [card, ...rest] = s.pending;
@@ -46,8 +46,12 @@ export function reduceRound(
   const correct = s.correct + (isCorrect ? 1 : 0);
   const missed = isCorrect ? s.missed : [...s.missed, card];
   const everMissed =
-    isCorrect || s.everMissed.includes(card.id) ? s.everMissed : [...s.everMissed, card.id];
-  const seen = s.seen.some((c) => c.id === card.id) ? s.seen : [...s.seen, card];
+    isCorrect || s.everMissed.includes(card.id)
+      ? s.everMissed
+      : [...s.everMissed, card.id];
+  const seen = s.seen.some((c) => c.id === card.id)
+    ? s.seen
+    : [...s.seen, card];
   const { required } = action;
   const base = { missed, everMissed, seen, correct, faced };
 

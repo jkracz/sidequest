@@ -26,7 +26,10 @@ export interface QuestRuntimeProps<Q extends SideQuest = SideQuest> {
 }
 
 /** Narrows QuestResult to the arm a given kind produces. */
-export type ResultOf<T extends SideQuest['type']> = Extract<QuestResult, { questType: T }>;
+export type ResultOf<T extends SideQuest['type']> = Extract<
+  QuestResult,
+  { questType: T }
+>;
 
 /**
  * The React-free half of a quest kind. Lives in kinds.ts so storage and the
@@ -50,4 +53,5 @@ export interface QuestKindUi<Q extends SideQuest = SideQuest> {
   LogDetail: FC<{ result: ResultOf<Q['type']> }>;
 }
 
-export type QuestKind<Q extends SideQuest = SideQuest> = KindData<Q> & QuestKindUi<Q>;
+export type QuestKind<Q extends SideQuest = SideQuest> = KindData<Q> &
+  QuestKindUi<Q>;

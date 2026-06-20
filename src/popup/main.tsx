@@ -9,5 +9,5 @@ initTheme();
 createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <PopupApp />
-  </React.StrictMode>
+  </React.StrictMode>,
 );
