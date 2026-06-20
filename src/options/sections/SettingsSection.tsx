@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState, type ChangeEvent, type ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -13,7 +13,22 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
+import { Download, FileJson, FileSpreadsheet, Upload } from 'lucide-react';
+import {
+  applyImportedData,
+  createQuestExport,
+  createQuestLogCsv,
+  createQuestLogExport,
+  describeAppliedImport,
+  describeImportSummary,
+  exportFileName,
+  parseSideQuestImport,
+  stringifyExport,
+  type ImportMode,
+  type ParsedImport,
+} from '../../shared/importExport';
 import { resetAllState, setState } from '../../shared/storage';
 import type { AppState, ThemePreference } from '../../shared/types';
 
@@ -24,6 +39,65 @@ const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
 ];
 
 export function SettingsSection({ state }: { state: AppState }) {
+  const importInputRef = useRef<HTMLInputElement>(null);
+  const [pendingImport, setPendingImport] = useState<ParsedImport | null>(null);
+  const [importMode, setImportMode] = useState<ImportMode>('merge');
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
+
+  function exportQuests() {
+    const now = new Date();
+    downloadTextFile(
+      exportFileName('quests', now),
+      stringifyExport(createQuestExport(state, now)),
+      'application/json;charset=utf-8'
+    );
+  }
+
+  function exportQuestLogJson() {
+    const now = new Date();
+    downloadTextFile(
+      exportFileName('quest-log', now),
+      stringifyExport(createQuestLogExport(state, now)),
+      'application/json;charset=utf-8'
+    );
+  }
+
+  function exportQuestLogCsv() {
+    downloadTextFile(
+      exportFileName('quest-log-csv'),
+      createQuestLogCsv(state),
+      'text/csv;charset=utf-8'
+    );
+  }
+
+  async function chooseImportFile(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.currentTarget.files?.[0];
+    event.currentTarget.value = '';
+    if (!file) return;
+
+    try {
+      const parsed = parseSideQuestImport(await file.text());
+      setPendingImport(parsed);
+      setImportMode('merge');
+      setImportError(null);
+      setImportMessage(null);
+    } catch (error) {
+      setPendingImport(null);
+      setImportError(error instanceof Error ? error.message : 'Could not import that file.');
+      setImportMessage(null);
+    }
+  }
+
+  async function confirmImport() {
+    if (!pendingImport) return;
+    const result = applyImportedData(state, pendingImport, importMode);
+    await setState(result.changes);
+    setImportMessage(describeAppliedImport(result));
+    setImportError(null);
+    setPendingImport(null);
+  }
+
   return (
     <section className="flex flex-col items-start gap-4">
       <Card className="w-full">
@@ -65,7 +139,7 @@ export function SettingsSection({ state }: { state: AppState }) {
 
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Quest log</CardTitle>
+          <CardTitle>Quest Log</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between gap-4">
@@ -100,7 +174,58 @@ export function SettingsSection({ state }: { state: AppState }) {
 
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Danger zone</CardTitle>
+          <CardTitle>Backup &amp; Restore</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <BackupRow
+            title="Quest setup"
+            description="Save the quests you have configured so they can be restored later."
+          >
+            <Button variant="outline" onClick={exportQuests}>
+              <Download aria-hidden="true" />
+              Export JSON
+            </Button>
+          </BackupRow>
+
+          <BackupRow
+            title="Quest log"
+            description="Save completed quests and resisted visits for backup or spreadsheet review."
+          >
+            <Button variant="outline" onClick={exportQuestLogJson}>
+              <FileJson aria-hidden="true" />
+              JSON
+            </Button>
+            <Button variant="outline" onClick={exportQuestLogCsv}>
+              <FileSpreadsheet aria-hidden="true" />
+              CSV
+            </Button>
+          </BackupRow>
+
+          <BackupRow
+            title="Import from backup"
+            description="Restore a SideQuest JSON export into your current history or quest setup."
+          >
+            <input
+              ref={importInputRef}
+              type="file"
+              accept="application/json,.json"
+              className="hidden"
+              onChange={(event) => void chooseImportFile(event)}
+            />
+            <Button variant="outline" onClick={() => importInputRef.current?.click()}>
+              <Upload aria-hidden="true" />
+              Import JSON
+            </Button>
+          </BackupRow>
+
+          {importError && <p className="text-[13px] text-destructive">{importError}</p>}
+          {importMessage && <p className="text-[13px] text-mint">{importMessage}</p>}
+        </CardContent>
+      </Card>
+
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Danger Zone</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <DangerRow
@@ -117,8 +242,102 @@ export function SettingsSection({ state }: { state: AppState }) {
           />
         </CardContent>
       </Card>
+
+      <Dialog
+        open={pendingImport !== null}
+        onOpenChange={(open) => {
+          if (!open) setPendingImport(null);
+        }}
+      >
+        <DialogContent>
+          {pendingImport && (
+            <>
+              <DialogHeader>
+                <DialogTitle>
+                  Import {pendingImport.kind === 'quests' ? 'quests' : 'quest log'}?
+                </DialogTitle>
+                <DialogDescription>{describeImportSummary(pendingImport.summary)}</DialogDescription>
+              </DialogHeader>
+
+              <RadioGroup
+                value={importMode}
+                onValueChange={(value) => setImportMode(value as ImportMode)}
+                className="grid gap-2"
+              >
+                <Label
+                  htmlFor="import-merge"
+                  className="flex cursor-pointer items-start gap-3 rounded-md border p-3 font-normal"
+                >
+                  <RadioGroupItem id="import-merge" value="merge" className="mt-0.5" />
+                  <span className="flex flex-col gap-0.5">
+                    <span className="font-medium">Merge with current data</span>
+                    <span className="text-muted-foreground">
+                      Existing records are kept and duplicates are skipped.
+                    </span>
+                  </span>
+                </Label>
+                <Label
+                  htmlFor="import-replace"
+                  className="flex cursor-pointer items-start gap-3 rounded-md border p-3 font-normal"
+                >
+                  <RadioGroupItem id="import-replace" value="replace" className="mt-0.5" />
+                  <span className="flex flex-col gap-0.5">
+                    <span className="font-medium">
+                      Replace current {pendingImport.kind === 'quests' ? 'quests' : 'quest log'}
+                    </span>
+                    <span className="text-muted-foreground">
+                      {pendingImport.kind === 'quests'
+                        ? 'Schedules keep only quest IDs that exist in the import.'
+                        : 'Current completed quests and resisted visits are cleared first.'}
+                    </span>
+                  </span>
+                </Label>
+              </RadioGroup>
+
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button onClick={() => void confirmImport()}>Import</Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
+}
+
+function BackupRow({
+  title,
+  description,
+  children,
+}: {
+  title: string;
+  description: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-0.5">
+        <span className="font-medium">{title}</span>
+        <span className="text-muted-foreground">{description}</span>
+      </div>
+      <div className="flex shrink-0 flex-wrap gap-2 sm:justify-end">{children}</div>
+    </div>
+  );
+}
+
+function downloadTextFile(filename: string, text: string, type: string) {
+  const blob = new Blob([text], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 function DangerRow({
