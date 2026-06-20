@@ -3,7 +3,7 @@ import { defineManifest } from '@crxjs/vite-plugin';
 export default defineManifest({
   manifest_version: 3,
   name: 'SideQuest',
-  version: '0.1.0',
+  version: '1.0.0',
   description:
     'Block distracting sites on a schedule. To get back in, complete a side quest.',
   icons: {
