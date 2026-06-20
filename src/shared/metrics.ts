@@ -37,6 +37,16 @@ export function activityByDay(state: AppState): Map<string, number> {
   return counts;
 }
 
+/** Completed quests per local day, keyed by dayKey (history only, excludes resists). */
+export function questsByDay(state: AppState): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const h of state.history) {
+    const key = dayKey(h.createdAt);
+    counts.set(key, (counts.get(key) ?? 0) + 1);
+  }
+  return counts;
+}
+
 function computeStreak(timestamps: number[], now: number): number {
   const days = new Set(timestamps.map(dayKey));
   const cursor = new Date(now);
