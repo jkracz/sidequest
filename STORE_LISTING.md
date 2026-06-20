@@ -8,22 +8,63 @@ SideQuest
 
 ## Short Description
 
-Earn your distractions. Blocked sites cost a side quest.
+Block distracting sites on a schedule. To get back in, complete a side quest.
 
 ## Full Description
 
-SideQuest helps you interrupt distracting browsing by blocking chosen websites during scheduled focus blocks or ad hoc sessions. When you visit a blocked site, SideQuest redirects the tab to a quest page. Completing a configured quest earns a temporary pass back to that site.
+SideQuest is a focus extension for people who do not want another all-or-nothing website blocker.
 
-Features:
+Instead of simply locking you out, SideQuest adds friction at the exact moment you are about to drift. You choose the sites that tend to pull you away from work, studying, reading, or sleep. When those sites are blocked, SideQuest redirects the tab to a quest page. To continue to the blocked site, you have to complete one of your configured side quests. Finishing a quest earns a temporary pass, so access is possible, but it is no longer effortless.
 
-- Create named block lists from website hostnames
-- Schedule recurring blocks by day and time
-- Start ad hoc blocking sessions from the popup when no block is already active
-- Complete reflection, timer, counter, or flashcard quests to earn temporary access
-- Review local quest history and focus stats
-- Sweep already-open blocked tabs when a block starts or a pass expires
+The goal is not to pretend distraction can be deleted. The goal is to turn impulsive browsing into a deliberate choice.
 
-SideQuest stores data locally in Chrome extension storage. It does not require an account and does not operate a backend service.
+How SideQuest works:
+
+1. Create block lists
+
+Make named groups of websites, such as social media, video, news, shopping, or anything else that eats your day. SideQuest matches by hostname and includes subdomains, so a single entry can cover the site you actually mean to block.
+
+2. Schedule focus blocks
+
+Set recurring time blocks by day and time, then choose which block lists they enforce. Use them for deep work, class, bedtime, morning routines, or any other part of the week where you want distraction to be harder to reach. Overnight schedules are supported, so a block can start in the evening and continue into the next morning.
+
+3. Start ad hoc sessions
+
+When no scheduled block is active, you can start a temporary block session from the extension popup. Pick a block list, choose a duration, and SideQuest enforces it until the session ends. Ad hoc sessions are useful when you need a clean hour right now and do not want to edit your recurring schedule.
+
+4. Complete side quests for temporary access
+
+When you try to visit a blocked site, SideQuest offers the quests you allowed for that block. Completing a quest grants a temporary pass back to the site for the number of minutes you configured.
+
+Current quest types include:
+
+- Reflection prompts: pause and answer a prompt before continuing
+- Timer quests: wait through a countdown before access is granted
+- Counter quests: complete a configurable honor-system action
+- Flashcards: review a deck before earning a pass
+
+You decide which quests exist, how they are configured, and how long each completed quest should unlock access.
+
+5. Track what happened
+
+SideQuest keeps a local quest log so you can see completed quests, resisted visits, activity streaks, estimated time saved, and daily activity. The log is there to make your patterns visible without turning focus into a black box.
+
+Why SideQuest is different:
+
+- It adds intentional friction instead of relying only on hard blocking
+- It lets you earn short passes instead of forcing a permanent yes or no
+- It supports schedules and quick one-off sessions
+- It lets different focus blocks use different quests
+- It catches already-open blocked tabs when a block starts or a pass expires
+- It works without accounts, subscriptions, or a remote service
+
+SideQuest is built for people who want a practical middle ground: stricter than a reminder, less brittle than pure willpower, and more flexible than a blocker that only says no.
+
+Privacy and data:
+
+SideQuest stores your settings and activity locally in Chrome extension storage. That includes block lists, schedules, quest settings, temporary passes, quest history, resisted visit records, and app settings.
+
+SideQuest does not require an account. It does not operate a backend service. It does not sell your data. Your SideQuest configuration and history stay on your device unless you choose to export them.
 
 ## Category
 
